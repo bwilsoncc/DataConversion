@@ -1,0 +1,213 @@
+/* 
+/*  Dean 10/24/05
+/********************************************************************************
+
+&ECHO &ON 
+&term 9999 
+DISPLAY 9999 1
+
+
+/***************************************************************************
+/* 1. delete coverages you will create and check if inputs are present 
+
+&wo ${WORKFOLDER}
+&s source = ${SOURCEFOLDER}
+
+&if [exists taxdetail -cover] &then kill taxdetail all
+&if [exists taxtemp -cover] &then kill taxtemp all
+&if [exists taxbound -cover] &then kill taxbound all
+&if [exists mapindex -cover] &then kill mapindex all 
+&if [exists taxmap -cover] &then kill taxmap all
+
+copy %source%\taxmap taxmap 
+
+/* 1.5 - add taxmap annotation attributes so you do not have to do it later 
+
+addtext taxmap igds 
+additem taxmap.tatigds taxmap.tatigds maplevel 3 3 i 
+additem taxmap.tatigds taxmap.tatigds mapsize 8 8 n 2 
+additem taxmap.tatigds taxmap.tatigds mapscale 5 5 i
+additem taxmap.tatigds taxmap.tatigds mapnumber 20 20 c 
+
+
+/* 2. make taxbound and taxdetail polygons 
+
+PRECISION DOUBLE DOUBLE 
+
+arcedit 
+
+EC TAXMAP 
+ef arc
+sel taxmaptype = 51 or taxmaptype = 52 
+put taxbound
+ef label
+sel taxmaptype = 51 or taxmaptype = 52 
+put taxbound
+
+save 
+q 
+
+clean taxbound # 10 .05 
+
+
+/* 3. Add fields 
+
+ADDITEM TAXBOUND.PAT TAXBOUND.PAT  MAPSCALE 5 5 I 
+ADDITEM TAXBOUND.PAT TAXBOUND.PAT  MAPNUMBER 20 20 C 
+ADDITEM TAXBOUND.PAT TAXBOUND.PAT  PAGENUMBER 3 3 I
+ADDITEM TAXBOUND.PAT TAXBOUND.PAT  ORMAPNUM 24 24 C 
+ADDITEM TAXBOUND.PAT TAXBOUND.PAT  MAPSUFTYPE 1 1 C 
+ADDITEM TAXBOUND.PAT TAXBOUND.PAT  MAPSUFNUM 3 3 I 
+
+ADDITEM TAXBOUND.PAT TAXBOUND.PAT  RELIACODE 2 2 I 
+ADDITEM TAXBOUND.PAT TAXBOUND.PAT  AUTODATE 8 10 D  
+ADDITEM TAXBOUND.PAT TAXBOUND.PAT  AUTOMETHOD 3 3 C  
+ADDITEM TAXBOUND.PAT TAXBOUND.PAT  AUTOWHO 30 30 C 
+ADDITEM TAXBOUND.PAT TAXBOUND.PAT  CITYNAME 50 50 C 
+
+&DATA ARC INFO
+ARC
+SEL TAXBOUND.PAT 
+RED
+45,MQ,1,1,C 
+46,MQQ,1,1,C 
+
+Q STOP
+&END 
+
+/* 3. CALCULATE SCALE FOR TAXDETAIL
+
+&DATA ARC INFO
+ARC
+SEL TAXBOUND.PAT 
+MOVE '0' TO MAPSUFTYPE 
+MOVE '000' TO MAPSUFNUM 
+CALC PAGENUMBER = 1
+
+CALC AUTODATE = AUTO-DATE
+MOVE AUTO-METHOD TO AUTOMETHOD 
+CALC RELIACODE = 0 
+MOVE AUTO-WHO TO AUTOWHO 
+
+MOVE MAPNUM TO MAPNUMBER 
+CONCACT ORMAPNUM FROM '040',TOWN,'.00','N',RANGE,'.00','W',SECTION,QTR,'--0000'
+
+CALC MAPSCALE = 2000
+RES SECTION > 0 
+CALC MAPSCALE = 400
+RES QTR NC '00' 
+CALC MAPSCALE = 200
+RES QTR NC '0'
+CALC MAPSCALE = 100
+
+
+Q STOP
+&END 
+
+
+/* 4. CALCULATE DETAIL AND ORMAPNUM FOR DETAILS 
+/* NOTE.... THIS IS STRANGE SECTION. CLATSOP DOES NOT HAVE DETAILS OR SUFFIX MAPS 
+/* NUMBERED. SO I ADDED A SUFFIX NUMBER TO THE FILE AND NOW I HAVE TO GO THRU MAP 
+/* NUMBER BY MAP NUMBER AND ASSIGN THEM A NUMBER. I DID THIS USING AN INFO PROGRMA 
+/* 
+
+&DATA ARC INFO 
+ARC
+SEL TAXBOUND.PAT 
+ERASE CALCSUFNUM
+Y
+PROGRAM CALCSUFNUM
+FORMAT $CHR10,10,10,C
+FORMAT $NUM1,4,4,I
+SEL TAXBOUND.PAT
+RES DETAILSCALE > 0 
+CALC MAPSCALE = DETAILSCALE 
+MOVE 'D' TO MAPSUFTYPE 
+SORT MAPNUM
+CALC $NUM1 = 1
+MOVE ' ' TO $CHR10
+PROGRAM SECTION 2
+CALC MAPSUFNUM = 1
+IF MAPNUM = $CHR10
+  CALC $NUM1 = $NUM1 + 1
+  CALC MAPSUFNUM = $NUM1
+  CALC PAGENUMBER = MAPSUFNUM
+ENDIF
+IF MAPNUM NE $CHR10
+  CALC $NUM1 = 1
+  CALC MAPSUFNUM = 1
+  CALC PAGENUMBER = MAPSUFNUM 
+ENDIF
+MOVE MAPNUM TO $CHR10
+PROGRAM SECTION 2N
+ASEL
+SORT TAXBOUND#
+
+RUN CALCSUFNUM
+
+ASEL
+RES DETAILSCALE > 0 
+CONCACT ORMAPNUM FROM '040',TOWN,'.00','N',RANGE,'.00','W',SECTION,QTR,'--D',MAPSUFNUM
+
+Q STOP
+&END 
+
+/* 7. GET RID OF LEADING ZEROES IN ORMAPNUM 
+
+ARCEDIT 
+DISPLAY 100
+EC TAXBOUND
+EF LABEL 
+SEL ALL
+CHANGE ORMAPNUM C/ /0/G 
+SAVE 
+Q  
+
+/* 8. Drop un-needed numbers 
+
+COPY TAXBOUND MAPINDEX 
+DROPITEM MAPINDEX.PAT MAPINDEX.PAT 
+IGDS-GGNO
+MAPNUM
+TOWN
+RANGE
+SECTION
+QTR
+TAXLOT
+REFOREST
+TAXCODE
+DETAILSCALE
+CLOSEMETHOD
+CLOSERROR
+LEGACRES1
+LEGACRES2
+MAPACRES
+AUTO-METHOD
+AUTO-REL
+AUTO-WHO
+AUTO-DATE
+GEOTRANSNO
+TAXMAPTYPE
+TAXMAPSYM
+POINTNAME
+SVYNUM
+TAXLOTKEY
+MAPSUFTYPE
+MAPSUFNUM
+TAXLOTC
+TAXNUM
+MQ
+MQQ
+[UNQUOTE ' '] 
+Y
+Y
+
+&if [exists taxdetail -cover] &then kill taxdetail all
+&if [exists taxtemp -cover] &then kill taxtemp all
+
+&RETURN
+
+
+
+ 
+

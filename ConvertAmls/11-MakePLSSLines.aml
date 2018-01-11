@@ -1,0 +1,148 @@
+/************************************************
+/* Creates coverages of corresponding feature classes plss lines 
+/* 
+/* 
+/*
+
+&ECHO &ON 
+
+&if [exists PLSSlin1 -cover] &then kill PLSSlin1 all 
+&if [exists PLSSline -cover] &then kill PLSSline all 
+
+/* 1. Select just plss lines  from taxmap  ************************
+
+&if ^ [exists taxbound -cover] &then &do 
+  &message &popup 
+  &type 'ERROR - MISSING TAXBOUND'
+  &message &on
+  &return ; &return 
+&end 
+
+reselect taxmap PLSSLin1 line 
+res taxmaptype = 7 OR taxmaptype = 2 or taxmaptype = 47 OR TAXMAPTYPE = 44 OR TAXMAPTYPE = 46~
+ OR TAXMAPTYPE = 48 OR TAXMAPTYPE = 3  
+[unquote ' '] 
+n
+n
+
+intersect PLSSLin1 taxbound PLSSLine line 
+
+
+/* 2. add needed items ************************ 
+
+additem PLSSLINE.aat PLSSLINE.aat linetype 3 3 i 
+additem PLSSLINE.aat PLSSLINE.aat source 20 20 c 
+additem PLSSLINE.aat PLSSLINE.aat sourcetype 20 20 c 
+additem PLSSLINE.aat PLSSLINE.aat DIRECTION 12 12 C 
+
+
+
+/* 3. assign fields as needed ************************
+
+&data arc info 
+arc
+
+/********************************** Assign values to all 
+
+sel PLSSLINE.AAT 
+MOVE AUTO-WHO TO AUTOWHO
+MOVE AUTO-METHOD TO AUTOMETHOD 
+CALC AUTODATE = AUTO-DATE
+
+MOVE 'OTHER' TO SOURCETYPE
+MOVE 'OLDTAXMAPS' TO SOURCE 
+CALC RELIACODE = 0
+MOVE ANGLE TO DIRECTION
+
+/******************************* SET LINE TYPES 
+
+ASEL
+
+CALC LINETYPE = TAXMAPTYPE                          /* MATCH ALL THAT MATCH 
+
+RES TAXMAPTYPE = 7                                     /* gov lots
+CALC LINETYPE = 46 
+
+Q STOP
+&END 
+
+/* 5. DROP ITEMS NOT USED ***************************
+
+DROPITEM PLSSLINE.AAT PLSSLINE.AAT               
+PLSSLIN1#
+PLSSLIN1-ID
+IGDS-STYLE
+CITYNAME
+TAXMAPSYM
+TAXMAPTYPE
+AUTO-METHOD
+AUTO-REL
+AUTO-WHO
+AUTO-DATE
+GEOTRANSNO
+TAXBOUND#
+AREA
+PERIMETER
+TAXBOUND-ID
+IGDS-GGNO
+MAPNUM
+TOWN
+RANGE
+SECTION
+QTR
+TAXLOT
+REFOREST
+TAXCODE
+DETAILSCALE
+CLOSEMETHOD
+CLOSERROR
+LEGACRES1
+LEGACRES2
+MAPACRES
+POINTNAME
+SVYNUM
+TAXLOTKEY
+PAGENUMBER
+ORMAPNUM
+MAPSUFTYPE
+MAPSUFNUM
+TAXLOTC
+TAXNUM
+MQ
+MQQ
+[UNQUOTE ' '] 
+Y
+Y
+
+
+&RETURN 
+/********************************************************************
+
+>100 - ARROWS 
+100-ARROWS
+032-TAXLOT
+033-HISTORY
+008-ROAD-ROW
+009-ROAD-CL
+040-SUBDIV
+014-RR-ROW
+015-RR-CL
+022-WATER-BDY
+024-RIVER
+026-CREEK
+008-GOV-LOTS
+002-PLS
+047-DLC
+053-TAXCODE
+062-MAPBOUND
+034-BRG/DIST
+017-ESMT-ROW
+034-HOOK
+034-LAND-HOOK
+034-DIM-TIC
+
+
+
+
+
+

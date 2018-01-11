@@ -1,0 +1,112 @@
+/* creates annotation and sets scale 
+/* 
+
+
+&ECHO &ON
+
+&if ^ [exists taxbound -cover] &then &do 
+  &type No Taxbound 
+  &return ; &return 
+&end 
+
+&if ^ [exists taxmap -cover] &then &do 
+  &type no taxmap 
+  &return ; &return 
+&end 
+
+&if [exists taxseemap -cover] &then kill taxseemap all 
+&if [exists tbigds -cover] &then kill tbigds all 
+&if [exists igds -cover] &then kill igds all 
+&if [exists taxmapbk -cover] &then kill taxmapbk all 
+
+copy taxmap taxmapbk                                       /* just in case you mess up
+
+ADDITEM TAXMAP.TATIGDS TAXMAP.TATIGDS AUTOWHO,30,30,C 
+ADDITEM TAXMAP.TATIGDS TAXMAP.TATIGDS AUTOMETHOD,3,3,C 
+ADDITEM TAXMAP.TATIGDS TAXMAP.TATIGDS AUTODATE,8,10,D 
+
+
+/* 2. Save annotation for seemaps and save map assignments 
+
+
+arcedit
+ec taxmap
+ef anno.igds 
+sel $level > 1000 
+put taxseemap 
+delete 
+sel all
+CALC AUTOWHO = 'MCH' 
+calc AUTODATE = $TODAY 
+CALC AUTOMETHOD =  'CNV'
+calc maplevel = $level 
+calc mapsize = $size
+save
+q 
+
+/* 3. Build point coverage for annoation and overlay it with map boundary 
+/*     using generate and intersect 
+
+&data arc info 
+arc
+sel TAXMAP.TATIGDS
+ALTER IGDS-ID 
+,10,,,,,,,,,,,,,
+CALC IGDS-ID = IGDS# 
+OUTPUT ../GENANNO.TXT INIT
+CALC $COMMA-SWITCH = -1 
+DIS IGDS-ID,X,Y PRINT 
+DIS 'end' print 
+q stop
+&end 
+
+IDEDIT TAXMAP ANNO.IGDS 
+
+generate IGDS
+INPUT GENANNO.TXT 
+POINTS 
+Q
+
+build IGDS point
+intersect igds taxbound tbigds point 
+
+/* 4. GET SCALE FOR BOTH MAPS AND DETAILS 
+
+&DATA ARC INFO
+ARC
+SEL TBIGDS.PAT 
+ALTER IGDS-ID
+,10,,,,,,,,,,,
+SORT IGDS-ID 
+SEL TAXMAP.TATIGDS 
+RELATE TBIGDS.PAT BY IGDS-ID WITH ORDER
+CALC $NM = 1 
+MOVE $1MAPNUMBER TO MAPNUMBER 
+CALC MAPSCALE = $1MAPSCALE 
+Q STOP
+&END 
+
+/* 7. CALC FEATURE TYPES TO STANDARD 
+
+ARCEDIT
+EC TAXMAP 
+EF ANNO.IGDS
+SEL ALL
+CALC $SIZE = 0
+CALC $SYMBOL = $LEVEL 
+
+SAVE 
+Q
+
+/* DROP ITEMS NOT NEEDED 
+
+PULLITEMS TAXMAP.TATIGDS TAXMAP.TATIGDS  IGDS# IGDS-ID SYMBOL LEVEL TEXT MAPSIZE MAPSCALE MAPNUMBER AUTOWHO AUTOMETHOD AUTODATE 
+
+/* KILL TEMPS 
+
+&if [exists tbigds -cover] &then kill tbigds all 
+&if [exists igds -cover] &then kill igds all 
+
+
+&RETURN
+

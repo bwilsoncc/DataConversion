@@ -1,0 +1,155 @@
+/************************************************
+/* Creates coverages of corresponding feature classes water lines
+/* 
+/* 
+/*
+
+&ECHO &ON 
+
+&if [exists waterln1 -cover] &then kill waterln1 all
+&if [exists waterlin -cover] &then kill waterlin all
+
+&if ^ [exists taxbound -cover] &then &do 
+  &message &popup 
+  &type 'ERROR - MISSING TAXBOUND'
+  &message &on
+  &return ; &return 
+&end 
+
+/* 1. Select just waterlines from taxmap  ************************
+
+
+reselect taxmap waterln1 line 
+res taxmaptype = 22 OR taxmaptype = 24 or taxmaptype = 26 or taxmaptype = 28 
+[unquote ' '] 
+n
+n
+
+/* 2. Intersect with taxbound to get map number  ************************
+
+intersect waterln1 taxbound waterlin line 
+
+
+/* 3. add needed items ************************ 
+
+additem waterlin.aat waterlin.aat watername 64 64 c 
+additem waterlin.aat waterlin.aat linetype 3 3 i 
+additem waterlin.aat waterlin.aat source 20 20 c 
+additem waterlin.aat waterlin.aat sourcetype 20 20 c 
+
+
+/* 4. assign fields as needed ************************
+
+&data arc info 
+arc
+
+/********************************** Assign values to all 
+
+sel WATERLIN.AAT 
+CALC AUTODATE = $TODAY 
+MOVE 'CNV' TO  AUTOMETHOD 
+MOVE 'MrComputer' TO AUTOWHO 
+CALC RELIACODE = 0 
+MOVE 'OTHER' TO SOURCETYPE 
+MOVE 'OLD TAXMAPS' TO SOURCE 
+
+
+/******************************* SET LINE TYPES 
+
+ASEL
+CALC LINETYPE = TAXMAPTYPE              /* water LINE VALUES/types match !!!! 
+
+Q STOP
+&END 
+
+
+/* 5. DROP ITEMS NOT USED ***************************
+
+DROPITEM WATERLIN.AAT WATERLIN.AAT               
+WATERLN1#
+WATERLN1-ID
+IGDS-STYLE
+ANGLE
+DISTANCE
+RADIUS
+DELTA
+TANGENT
+ARCLENGTH
+CITYNAME
+SIDE
+RADIUS2
+TANGENT2
+TAXMAPSYM
+TAXMAPTYPE
+AUTO-METHOD
+AUTO-REL
+AUTO-WHO
+AUTO-DATE
+GEOTRANSNO
+TAXBOUND#
+AREA
+PERIMETER
+TAXBOUND-ID
+IGDS-GGNO
+MAPNUM
+TOWN
+RANGE
+SECTION
+QTR
+TAXLOT
+REFOREST
+TAXCODE
+DETAILSCALE
+CLOSEMETHOD
+CLOSERROR
+LEGACRES1
+LEGACRES2
+MAPACRES
+POINTNAME
+SVYNUM
+TAXLOTKEY
+PAGENUMBER
+ORMAPNUM
+MAPSUFTYPE
+MAPSUFNUM
+TAXLOTC
+TAXNUM
+MQ
+MQQ
+[UNQUOTE ' '] 
+Y
+Y
+
+&if [exists waterln1 -cover] &then kill waterln1 all
+
+&RETURN 
+/********************************************************************
+
+>100 - ARROWS 
+100-ARROWS
+032-TAXLOT
+033-HISTORY
+008-ROAD-ROW
+009-ROAD-CL
+040-SUBDIV
+014-RR-ROW
+015-RR-CL
+022-WATER-BDY
+024-RIVER
+026-CREEK
+008-GOV-LOTS
+002-PLS
+047-DLC
+053-TAXCODE
+062-MAPBOUND
+034-BRG/DIST
+017-ESMT-ROW
+034-HOOK
+034-LAND-HOOK
+034-DIM-TIC
+
+
+
+
+
+

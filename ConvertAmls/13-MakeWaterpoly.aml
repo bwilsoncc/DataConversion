@@ -1,0 +1,56 @@
+/************************************************
+/* Creates feature dataset of water polygons
+/* 
+/* 
+/*
+
+&ECHO &ON 
+
+&if [exists water -cover] &then kill water all
+
+&if ^ [exists taxlot -cover] &then &do 
+  &message &popup 
+  &type 'ERROR - MISSING taxlots
+  &message &on
+  &return ; &return 
+&end 
+
+/* 1. create water polygon coverage ************************
+
+PRECISION DOUBLE DOUBLE 
+create water
+build water poly 
+
+TOLERANCE TAXLOT FUZZY .01 
+
+additem water.PAT water.PAT watername,64,64,c 
+ADDITEM WATER.PAT WATER.PAT WATERTYPE,20,20,C 
+ADDITEM water.PAT water.PAT SOURCE,20,20,C
+ADDITEM water.PAT water.PAT SOURCETYPE,20,20,C
+ADDITEM water.PAT water.PAT RELIACODE,2,2,I 
+ADDITEM water.PAT water.PAT AUTODATE,8,10,D
+ADDITEM water.PAT water.PAT AUTOMETHOD,3,3,C 
+ADDITEM water.PAT water.PAT AUTOWHO,30,30,C 
+
+arcedit 
+ec taxlot 
+ef poly 
+sel taxlot cn 'wat' or TAXLOT CN 'WAT' 
+PUT WATER 
+Y
+SAVE 
+Q
+
+BUILD WATER POLY 
+
+&DATA ARC INFO
+ARC
+SEL WATER.PAT
+MOVE 'OLDTAXMAPS' TO SOURCE 
+MOVE 'OTHER' TO SOURCETYPE 
+MOVE 'WATERBODY' TO WATERTYPE
+Q STOP
+&END 
+
+&RETURN
+

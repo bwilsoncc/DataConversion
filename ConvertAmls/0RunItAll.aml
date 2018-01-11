@@ -1,0 +1,29 @@
+&WO C:\GeoModel\Clatsop\WorkFolder
+
+&run C:\GeoModel\Clatsop\ConvertAmls\01-MakeMapIndex.aml
+
+&run C:\GeoModel\Clatsop\ConvertAmls\02-Maketaxcode.aml
+
+&run C:\GeoModel\Clatsop\ConvertAmls\03-MakeTaxlot.aml
+
+&run C:\GeoModel\Clatsop\ConvertAmls\04-convertanno.aml
+
+&run C:\GeoModel\Clatsop\ConvertAmls\05-convertseemap.aml
+
+&run C:\GeoModel\Clatsop\ConvertAmls\06-taxcodeAnno.aml
+
+&run C:\GeoModel\Clatsop\ConvertAmls\07-taxlotanno.aml
+
+&run C:\GeoModel\Clatsop\ConvertAmls\08-MakeRefLines.aml
+
+&run C:\GeoModel\Clatsop\ConvertAmls\09-MakeCARTOLINES.aml
+
+&run C:\GeoModel\Clatsop\ConvertAmls\10-MakeCornerPoints.aml
+
+&run C:\GeoModel\Clatsop\ConvertAmls\11-MakePLSSLines.aml
+
+&run C:\GeoModel\Clatsop\ConvertAmls\12-MakeWaterLines.aml
+
+&run C:\GeoModel\Clatsop\ConvertAmls\13-MakeWaterpoly.aml
+
+&run C:\GeoModel\Clatsop\ConvertAmls\14-ACRESanno.aml

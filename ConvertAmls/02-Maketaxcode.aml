@@ -1,0 +1,101 @@
+
+
+&ECHO &ON 
+&term 9999 
+
+/***************************************************************************
+/* 1. delete coverages you will create and check if inputs are present 
+
+&s source = ${SOURCEFOLDER}
+
+&if [exists taxcode -cover] &then kill taxcode all
+&if [exists taxcode1 -cover] &then kill taxcode1 all
+
+&if ^ [exists taxmap -cover] &then &do 
+ &type no taxmap 
+  &return ; &return 
+&end 
+
+/* 2. Create taxcodes just the way mapcheck does 
+
+PRECISION DOUBLE DOUBLE 
+
+arcedit
+ec taxmap 
+ef arc
+sel taxmaptype = 51 or taxmaptype = 53
+put taxcode1
+ef label
+sel taxmaptype = 54
+put taxcode1
+save
+q
+
+clean taxcode1 # 10 .05
+dissolve taxcode1 taxcode taxcode
+
+&data arc info
+arc
+sel TAXCODE.PAT
+CALC TAXCODE-ID = TAXCODE# 
+Q STOP
+&END 
+IDEDIT TAXCODE 
+
+/* 3. add items 
+
+additem taxcode.pat taxcode.pat county 3 3 i 
+additem taxcode.pat taxcode.pat otaxcode 8 8 c 
+additem taxcode.pat taxcode.pat source 20 20 c 
+additem taxcode.pat taxcode.pat YearCreated 8 10 d 
+additem taxcode.pat taxcode.pat ReliaCode 2 2 i 
+additem taxcode.pat taxcode.pat Autodate 8 10 d 
+additem taxcode.pat taxcode.pat AutoMethod 3 3 c 
+additem taxcode.pat taxcode.pat AutoWho 30 30 c 
+
+/* 4. calc Items 
+
+&data arc info 
+arc
+sel TAXCODE.PAT 
+MOVE TAXCODE TO OTAXCODE
+ALTER TAXCODE 
+CTAXCODE,,,,,,,,,,,
+ALTER OTAXCODE 
+TAXCODE,,,,,,,,,,,, 
+
+CALC COUNTY = 4 
+MOVE 'OLD TAXMAPS' TO SOURCE 
+CALC YEARCREATED = $TODAY  
+CALC RELIACODE = 0 
+CALC AUTODATE = $TODAY
+MOVE 'CNV' to AUTOMETHOD 
+MOVE 'MCH' TO AUTOWHO 
+
+Q STOP
+&END 
+
+/* 5. Drop un-needed items 
+
+DROPITEM TAXCODE.PAT TAXCODE.PAT CTAXCODE 
+DROPITEM TAXCODE.PAT TAXCODE.PAT TAXMAPTYPE 
+
+/* 6. MAKE TAXCODE LINES 
+
+BUILD TAXCODE LINE 
+
+ADDITEM TAXCODE.AAT TAXCODE.AAT CURRENTLINE 1 1 C 
+
+&DATA ARC INFO 
+ARC
+SEL TAXCODE.AAT 
+MOVE 'Y' TO CURRENTLINE
+Q STOP
+&END 
+
+
+&if [exists taxcode1 -cover] &then kill taxcode1 all
+
+&return
+
+

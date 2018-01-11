@@ -1,0 +1,160 @@
+/************************************************
+/* Creates coverages of corresponding feature class-> corner points
+/* 
+/* 
+/*
+
+&ECHO &ON 
+
+&if [exists cornpt1 -cover] &then kill cornpt1 all 
+&if [exists corner -cover] &then kill corner all 
+
+&if ^ [exists taxbound -cover] &then &do 
+  &message &popup 
+  &type 'ERROR - MISSING TAXBOUND'
+  &message &on
+  &return ; &return 
+&end 
+
+/* 1. Select just CIRBER POINTS ************************
+/*20-HWYSTATION
+/*45-SECTION
+/*44-SUBSECTION
+/*47-DLC
+/*48-MEANDER
+
+reselect taxmap cornpt1 point 
+res taxmaptype = 20 OR taxmaptype = 44 or taxmaptype = 45 OR TAXMAPTYPE = 47 ~
+OR TAXMAPTYPE = 48 
+[unquote ' '] 
+n
+n
+
+/* 2. Intersect with taxbound to get map number  ************************
+
+intersect cornpt1 taxbound corner  point
+
+/* 3. add needed items ************************ 
+
+additem corner.Pat corner.Pat CornerSymbol 3 3 i 
+additem corner.Pat corner.Pat CornerDesc 64 64 c 
+additem corner.Pat corner.Pat ControlType 3 3 i 
+additem corner.Pat corner.Pat CommonName 32 32 c 
+additem corner.Pat corner.Pat GCDB 10 10 c 
+additem corner.Pat corner.Pat Easting 8 18 F 5 
+additem corner.Pat corner.Pat Northing 8 18 F 5 
+additem corner.Pat corner.Pat Latitude 8 18 F 5 
+additem corner.Pat corner.Pat Longitude 8 18 F 5 
+
+additem corner.Pat corner.Pat source 20 20 c 
+additem corner.Pat corner.Pat sourcetype 20 20 c 
+
+
+/* 4. assign fields as needed ************************
+
+&data arc info 
+arc
+
+/********************************** Assign values to all 
+
+sel CORNER.PAT
+CALC AUTODATE = AUTO-DATE
+MOVE AUTO-METHOD TO AUTOMETHOD 
+MOVE AUTO-WHO TO AUTOWHO
+MOVE 'OTHER' TO SOURCETYPE
+MOVE 'OLDTAXMAPS' TO SOURCE 
+CALC RELIACODE = 0
+MOVE POINTNAME TO COMMONNAME
+MOVE POINTNAME TO CORNERDESC
+
+/******************************* SET POINT TYPES 
+
+ASEL
+RES TAXMAPTYPE = 39                                     /* GENERAL CORNER
+CALC CORNERSYMBOL = 1 
+
+ASEL
+RES TAXMAPTYPE = 20                                     /* Station-corner
+CALC CORNERSYMBOL = 1 
+
+ASEL
+RES TAXMAPTYPE = 45                                      /* Section
+CALC CORNERSYMBOL = 2 
+
+ASEL
+RES TAXMAPTYPE = 44                                     /* subsection
+CALC CORNERSYMBOL = 2 
+
+ASEL
+RES TAXMAPTYPE = 47                                     /* DLC
+CALC CORNERSYMBOL = 2 
+
+ASEL
+RES TAXMAPTYPE = 48                                     /* MEANDER
+CALC CORNERSYMBOL = 2 
+
+Q STOP
+&END 
+
+/* 5. DROP ITEMS NOT USED ***************************
+
+DROPITEM CORNER.PAT CORNER.PAT 
+CORNPT1#
+CORNPT1-ID
+IGDS-GGNO
+MAPNUM
+TOWN
+RANGE
+SECTION
+QTR
+TAXLOT
+REFOREST
+TAXCODE
+DETAILSCALE
+CITYNAME
+CLOSEMETHOD
+CLOSERROR
+LEGACRES1
+LEGACRES2
+MAPACRES
+AUTO-METHOD
+AUTO-REL
+AUTO-WHO
+AUTO-DATE
+GEOTRANSNO
+TAXMAPTYPE
+TAXMAPSYM
+POINTNAME
+SVYNUM
+TAXLOTKEY
+TAXBOUND#
+TAXBOUND-ID
+PAGENUMBER
+ORMAPNUM
+MAPSUFTYPE
+MAPSUFNUM
+TAXLOTC
+TAXNUM
+MQ
+MQQ
+[UNQUOTE ' '] 
+Y
+Y
+
+&if [exists cornpt1 -cover] &then kill cornpt1 all 
+
+&RETURN 
+/********************************************************************
+
+/*LABFEATURE
+/*20-HWYSTATION
+/*45-SECTION
+/*44-SUBSECTION
+/*47-DLC
+/*48-MEANDER
+
+
+
+
+
+

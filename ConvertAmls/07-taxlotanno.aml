@@ -1,0 +1,212 @@
+/* Creates the coverages needed to make linked annotation for taxlots 
+/* 
+/* Inputs: 1. Taxlot Polygon coverage that contains the "taxlotkey" Mapnumber & scale?
+/*         2. Taxmap point/line/anno coverage that contains taxlot anno and arrows
+/* 
+/* Outputs: 1. Taxlot anno coverage with unique taxlot, mapnumber, and scale assigned
+/* 
+/* Steps 
+/*         1. delete coverages you will create and check if inputs are present 
+/*         2. create point coverage of annotation with a field called taxlot 
+/*         3. find taxlot text in the correct overlap taxlot polygon (calc TAXMAPKEY)
+/*         4. Find taxlots that did not match using point distance 
+/*         5. check results and assign scale (mapscale = 0 are the unassigned) 
+/* 
+/* Some Customization Notes 
+/* 
+/*        I copy the taxlots from another workspace when it first runs 
+/*        I redefine fields when calculating taxlots - this is site specific 
+/*        Mapnum is defined as 10 char field 
+/*        TAXMAPKEY my unique map-taxlot number 
+/*        My anno class is "IGDS" - left over from initial conversion 
+/* 
+/* 
+/*  Dean 6/24/05
+/********************************************************************************
+
+&ECHO &ON 
+&term 9999 
+DISPLAY 100
+
+/***************************************************************************
+/* 1. delete coverages you will create and check if inputs are present 
+
+/***** GET A COPY OF TAXLOT TO YOUR WORK SPACE........
+
+&if [exists taxlotan -cover] &then kill taxlotan all
+&if [exists igds -cover] &then kill igds all
+&if [exists taxlab -cover] &then kill taxlab all
+&if [exists igdstaxint -cover] &then kill igdstaxint all
+
+&if ^ [exists taxmap -cover] &then &do
+  &message &popup 
+  &type must have taxmap coverage 
+  &message &on 
+  &return 
+&end 
+
+
+/********************************************************************************
+/* 2. create point coverage of annotation with a field called taxlot that is in the 
+/* correct format. 
+/*
+/* 2a. create a new coverage of taxanno (level 37) for numbers 
+             
+
+reselect taxmap taxlotan anno.igds      
+RES level = 37 and ( text cn 'L' or text nc 'C' or text nc 'A' or text nc 'M' or text nc 'U' )
+[unquote ' ']
+n
+n
+
+/* 2b. create taxlot text field for matching with taxlot 
+
+ADDITEM TAXLOTAN.TATIGDS TAXLOTAN.TATIGDS TAXLOT 5 5 C 
+ADDITEM TAXLOTAN.TATIGDS TAXLOTAN.TATIGDS MAPTAXLOT 25 25 C 
+ADDITEM TAXLOTAN.TATIGDS TAXLOTAN.TATIGDS OVERLAP 1 1 C 
+
+&data arc info
+arc
+sel TAXLOTAN.TATIGDS 
+RED
+17,TXT5,5,5,C
+
+MOVE TXT5 TO TAXLOT 
+Q STOP 
+&END 
+
+/* 2c. create a text file of coordinates and generate a point coverage 
+
+&s x = [delete genano.txt -file] 
+
+&data arc info
+arc
+SEL TAXLOTAN.TATIGDS
+alter IGDS-ID 
+,10,,,,,,
+CALC IGDS-ID = IGDS# 
+CALC $COMMA-SWITCH = -1 
+OUTPUT ../GENANO.TXT init 
+ASEL
+DIS IGDS-ID,X,Y print 
+DIS 'END' print 
+Q STOP
+&END 
+
+IDEDIT TAXLOTAN ANNO.IGDS 
+
+/* 2d. generate point cover 
+
+generate igds 
+input GENANO.txt 
+points
+q 
+
+build igds point
+additem igds.pat igds.pat overlap 1 1 c 
+
+/***************************************************************************
+/* 3. find text in the correct polygon (OVERLAPPING AND CALC KEY TO BE CORRECT) 
+/*  
+/* 
+
+/* 3a. interest the point coverage with the taxlot polygon coverage 
+
+intersect igds taxlot igdstaxint point 
+
+/* 3b. use INFO to link the intersected coverage with intersect. If text matches 
+/* then assign the correct map number. If overlap text does not match then save 
+/* for doing nearby. 
+
+&DATA ARC INFO
+ARC
+SEL IGDSTAXINT.PAT 
+ALTER IGDS-ID
+,10,,,,,,,,
+SORT IGDS-ID
+sel IGDS.PAT 
+ALTER IGDS-ID
+,10,,,,,,,
+SORT IGDS-ID 
+SEL TAXLOTAN.TATIGDS
+RELATE IGDSTAXINT.PAT BY IGDS-ID WITH ORDER
+CALC $NM = 1
+RES TAXLOT = $1TAXLOT
+MOVE $1MAPTAXLOT TO MAPTAXLOT 
+RELATE IGDS.PAT BY IGDS-ID WITH ORDER 
+MOVE 'Y' TO OVERLAP 
+MOVE 'Y' TO $1OVERLAP 
+SEL IGDS.PAT 
+SORT IGDS# 
+Q STOP
+&END 
+
+
+/*****************************************************************************
+/* 4. Find text that is not overlapping 
+/*
+/* 4A. DELETE ALL POINTS that where annotation matched with the overap (see step 3)
+
+ARCEDIT 
+EC IGDS
+EF LABEL
+SEL OVERLAP CN 'Y' 
+DELETE 
+SAVE
+Q
+
+/* 4B. create point coverage from taxlot polygons to find nearbys 
+
+arcedit
+ec taxlot 
+ef label 
+sel all
+put taxlab 
+q
+
+build taxlab point 
+
+/* 4C. create distance file for points 
+
+&S X = [DELETE NEARBYPT -INFO] 
+POINTDISTANCE igds taxlab nearbypt 500
+
+/* 4d. match overlapping points 
+
+&DATA ARC INFO
+ARC
+SEL NEARBYPT 
+SORT IGDS#,DISTANCE
+RELATE IGDS.PAT BY IGDS# WITH ORDER
+RELATE 2 TAXLOTAN.TATIGDS BY $1IGDS-ID 
+RELATE 3 TAXLAB.PAT BY TAXLAB# WITH LINK
+CALC $NM = 1
+RES $2TAXLOT = $3TAXLOT 
+MOVE $3MAPTAXLOT TO $2MAPTAXLOT
+Q STOP
+&END 
+
+&RETURN
+
+/* 5. Delete taxlot annotation from taxmap. This annotation is now feature linked in a
+/* new coverage called taxlotan 
+/*
+
+ARCEDIT 
+EC taxmap
+EF anno.igds 
+sel $level = 37 and ( $text cn 'L' or $text nc 'C' or $text nc 'A' or $text nc 'M' or $text nc 'U' )
+DELETE 
+SAVE
+Q
+
+/* KILL BAD STUFF
+
+&if [exists taxlotar -cover] &then kill taxlotar all
+&if [exists igds -cover] &then kill igds all
+&if [exists taxlab -cover] &then kill taxlab all
+&if [exists igdstaxint -cover] &then kill igdstaxint all
+
+
+&RETURN
+
