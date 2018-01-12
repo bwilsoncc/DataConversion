@@ -1,3 +1,8 @@
+/* --- start
+&WATCH C:\GeoModel\Clatsop\Workfolder\01-MakeMapIndex.wat &COMMANDS
+&WORKSPACE C:\GeoModel\Clatsop\Workfolder
+&s source = C:\GeoModel\Clatsop\Source\t4-10
+/* --- end
 &ECHO &ON
 
 /* 

@@ -1,12 +1,13 @@
-
-
+/* --- start
+&WATCH C:\GeoModel\Clatsop\Workfolder\01-MakeMapIndex.wat &COMMANDS
+&WORKSPACE C:\GeoModel\Clatsop\Workfolder
+&s source = C:\GeoModel\Clatsop\Source\t8-10
+/* --- end
 &ECHO &ON 
 &term 9999 
 
 /***************************************************************************
 /* 1. delete coverages you will create and check if inputs are present 
-
-&s source = ${SOURCEFOLDER}
 
 &if [exists taxcode -cover] &then kill taxcode all
 &if [exists taxcode1 -cover] &then kill taxcode1 all

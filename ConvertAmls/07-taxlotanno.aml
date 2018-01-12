@@ -1,3 +1,8 @@
+/* --- start
+&WATCH C:\GeoModel\Clatsop\Workfolder\01-MakeMapIndex.wat &COMMANDS
+&WORKSPACE C:\GeoModel\Clatsop\Workfolder
+&s source = C:\GeoModel\Clatsop\Source\t8-10
+/* --- end
 /* Creates the coverages needed to make linked annotation for taxlots 
 /* 
 /* Inputs: 1. Taxlot Polygon coverage that contains the "taxlotkey" Mapnumber & scale?

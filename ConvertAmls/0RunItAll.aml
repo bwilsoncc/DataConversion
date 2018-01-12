@@ -1,4 +1,6 @@
-&WO C:\GeoModel\Clatsop\WorkFolder
+&WORKSPACE C:\GeoModel\Clatsop\WorkFolder
+&watch c:\GeoModel\Clatsop\Workfolder\runitall.wat
+&s source = C:\GeoModel\Clatsop\Source\t8-10
 
 &run C:\GeoModel\Clatsop\ConvertAmls\01-MakeMapIndex.aml
 
