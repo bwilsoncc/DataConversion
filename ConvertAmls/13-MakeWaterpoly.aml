@@ -28,6 +28,7 @@ build water poly
 
 TOLERANCE TAXLOT FUZZY .01 
 
+/* Adds fields I guess? Weird syntax
 additem water.PAT water.PAT watername,64,64,c 
 ADDITEM WATER.PAT WATER.PAT WATERTYPE,20,20,C 
 ADDITEM water.PAT water.PAT SOURCE,20,20,C
@@ -37,17 +38,29 @@ ADDITEM water.PAT water.PAT AUTODATE,8,10,D
 ADDITEM water.PAT water.PAT AUTOMETHOD,3,3,C 
 ADDITEM water.PAT water.PAT AUTOWHO,30,30,C 
 
+/*-----------
+/* THIS SECTION FAILS if there are no water "taxlots" selected.
+/* If it does then execution stops here but that's okay
+/* because if no taxlots are selected then there will
+/* be no water polygons and so we don't have to do any
+/* more work on them!
+/*
 arcedit 
 ec taxlot 
 ef poly 
-sel taxlot cn 'wat' or TAXLOT CN 'WAT' 
-PUT WATER 
-Y
+SELECT taxlot cn 'wat' or TAXLOT CN 'WAT'
+&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
+  PUT WATER 
+  Y
+&END
 SAVE 
-Q
+QUIT
+/*------------
 
 BUILD WATER POLY 
 
+/*------------
+/* I am thinking this renames columns?
 &DATA ARC INFO
 ARC
 SEL WATER.PAT

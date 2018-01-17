@@ -26,7 +26,7 @@
 
 &ECHO &ON 
 &term 9999 
-DISPLAY 100
+DISPLAY 1040
 
 /***************************************************************************
 /* 1. delete coverages you will create and check if inputs are present 
@@ -177,8 +177,10 @@ Q STOP
 ARCEDIT 
 EC IGDS
 EF LABEL
-SEL OVERLAP CN 'Y' 
-DELETE 
+SELECT OVERLAP CN 'Y' 
+&IF [SHOW NUMBER SELECT] > 0 &THEN &DO
+  DELETE
+&END
 SAVE
 Q
 
