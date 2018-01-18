@@ -40,7 +40,7 @@ DISPLAY 1040
 
 &if ^ [exists taxmap -cover] &then &do
   &message &popup 
-  &type must have taxmap coverage 
+  &type AML MESSAGE: must have taxmap coverage 
   &message &on 
   &return 
 &end 
@@ -50,7 +50,7 @@ DISPLAY 1040
 /* 2. create point coverage of annotation with a field called taxlot that is in the 
 /* correct format. 
 /*
-/* 2a. create a new coverage of TAXACAN (level 38) for numbers 
+/* 2a. create a new coverage called "TAXACAN" (level 38) for numbers 
              
 
 reselect taxmap TAXACAN anno.igds      
@@ -60,7 +60,6 @@ n
 n
 
 /* 2b. create taxlot text field for matching with taxlot 
-
  
 ADDITEM TAXACAN.TATIGDS TAXACAN.TATIGDS MAPTAXLOT 25 25 C 
 ADDITEM TAXACAN.TATIGDS TAXACAN.TATIGDS OVERLAP 1 1 C 
@@ -74,32 +73,36 @@ MOVE TEXT TO TAXACRETXT
 Q STOP
 &END 
 
-ARCEDIT
-EC TAXACAN
-EF ANNO.IGDS 
-SEL TAXACRETXT CN 'AC.'
-&IF [SHOW NUMBER SELECT] > 0 &THEN CHANGE TAXACRETXT C/AC.// 
+/* -----
+/* This strips out some unwanted text from the TAXACRETXT field
 
-SEL TAXACRETXT CN 'AC '
-&IF [SHOW NUMBER SELECT] > 0 &THEN CHANGE TAXACRETXT C/AC// 
-
-SEL TAXACRETXT CN 'ac.'
-&IF [SHOW NUMBER SELECT] > 0 &THEN CHANGE TAXACRETXT C/ac.// 
-
-SEL TAXACRETXT CN 'Ac.'
-&IF [SHOW NUMBER SELECT] > 0 &THEN CHANGE TAXACRETXT C/Ac.// 
-
-SEL TAXACRETXT CN '\' 
-&IF [SHOW NUMBER SELECT] > 0 &THEN CHANGE TAXACRETXT C/\//
-SAVE 
-Q 
-
-
+/* ARCEDIT
+/* EC TAXACAN
+/* EF ANNO.IGDS 
+/* SEL TAXACRETXT CN 'AC.'
+/* &IF [SHOW NUMBER SELECT] > 0 &THEN CHANGE TAXACRETXT C/AC.// 
+/* 
+/* SEL TAXACRETXT CN 'AC '
+/* &IF [SHOW NUMBER SELECT] > 0 &THEN CHANGE TAXACRETXT C/AC// 
+/* 
+/* SEL TAXACRETXT CN 'ac.'
+/* &IF [SHOW NUMBER SELECT] > 0 &THEN CHANGE TAXACRETXT C/ac.// 
+/* 
+/* SEL TAXACRETXT CN 'Ac.'
+/* &IF [SHOW NUMBER SELECT] > 0 &THEN CHANGE TAXACRETXT C/Ac.// 
+/* 
+/* SEL TAXACRETXT CN '\' 
+/* &IF [SHOW NUMBER SELECT] > 0 &THEN CHANGE TAXACRETXT C/\//
+/* SAVE 
+/* Q 
+/* 
+/* This converts the text acres into a number
 &data arc info                            /* CONTAINS BLANKS FOR NUMERIC OVERFLOWS
 arc
 sel TAXACAN.TATIGDS 
-RES TAXACRETXT NC 'S' AND TAXACRETXT NC 'A' AND TAXACRETXT NC 'M' AND TAXACRETXT NC 'R' 
-CALC TAXACRES = TAXACRETXT 
+/* RES TAXACRETXT NC 'S' AND TAXACRETXT NC 'A' AND TAXACRETXT NC 'M' AND TAXACRETXT NC 'R' 
+/* CALC TAXACRES = TAXACRETXT This fails because the cleaning above fails
+CALC TAXACRES = 0
 Q STOP 
 &END 
 
@@ -137,7 +140,7 @@ additem igds.pat igds.pat overlap 1 1 c
 /*  
 /* 
 
-/* 3a. interest the point coverage with the taxlot polygon coverage 
+/* 3a. Intersect the point coverage with the taxlot polygon coverage 
 
 intersect igds taxlot igdstaxint point 
 
@@ -220,12 +223,13 @@ Q STOP
 /* new coverage called taxlotan 
 /*
 
-
 ARCEDIT 
 EC taxmap
 EF anno.igds 
-sel $level = 38
-DELETE 
+SELECT $level = 38
+&IF [SHOW NUMBER SELECT] > 0 &THEN &DO
+  DELETE 
+&END
 SAVE
 Q
 
