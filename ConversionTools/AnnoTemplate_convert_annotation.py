@@ -21,10 +21,7 @@ def deletefc(fc):
     if arcpy.Exists(fc):
         arcpy.Delete_management(fc)
         msg += " deleted."
-    else:
-        msg += " doesn't exist."
-    print(msg)
-    arcpy.AddMessage(msg)
+    aprint(msg)
     return
 
 def fix_fontsize(outputfc):
@@ -103,18 +100,17 @@ try:
     if overwrite_str == "true":
         overwrite = True
 except IndexError:
-    print("Usage: %s <mxd name> <output workspace>" % (sys.argv[0]))
-    mxdname = "C:/GeoModel/Clatsop/AnnoTemplate.mxd"
-    output_workspace = "C:\\GeoModel\\Clatsop\\ORMAP-SchemaN_08-21-08.mdb"
-    overwrite = True
+    aprint("Usage: %s <mxd name|CURRENT> <output geodatabase> <overwrite=true|false>" % (sys.argv[0]))
+    exit(1)
 
-#arcpy.AddMessage("Overwrite = \"%s\" %s" % (overwrite, type(overwrite)))
-#arcpy.env.overwriteOutput = True
+#mxdname = "C:/GeoModel/Clatsop/AnnoTemplate.mxd"
+#output_workspace = "C:\\GeoModel\\Clatsop\\ORMAP-SchemaN_08-21-08.mdb"
+#overwrite = True
 
 mxd = arcpy.mapping.MapDocument(mxdname)
 
+# Assumption is that there is only one dataframe in the template mxd.
 df = arcpy.mapping.ListDataFrames(mxd)[0]
-print("Dataframe:", df.name)    
 reference_scale = "1200"
 
 convert_anno(mxd, df, output_workspace, reference_scale, overwrite)
