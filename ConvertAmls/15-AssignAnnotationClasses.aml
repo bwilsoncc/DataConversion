@@ -1,0 +1,40 @@
+/* --- start
+&WATCH C:\GeoModel\MapProduction\assign_level.wat &COMMANDS
+&WORKSPACE C:\GeoModel\Clatsop\Workfolder\t4-10
+/* --- end
+/*
+/* Prepare for creating annotation classes that correspond to scales.
+/* Foreach anno layer that will be converted, 
+/*   Copying MAPSCALE to $LEVEL
+/* 
+/* Brian Wilson <bwilson@co.clatsop.or.us>
+/********************************************************************************
+
+/* Taxlots
+ARCEDIT
+EC taxlotan
+EF annotation.igds 
+SEL ALL
+CALC $LEVEL = MAPSCALE
+SAVE
+Q
+
+/* Taxlot Acres (acres anno links to Taxlots too)
+ARCEDIT
+EC taxacan
+EF annotation.igds 
+SEL ALL
+CALC $LEVEL = MAPSCALE
+SAVE
+Q
+
+/* Taxcode
+ARCEDIT
+EC taxcodan
+EF annotation.igds 
+SEL ALL
+CALC $LEVEL = MAPSCALE
+SAVE
+Q
+
+&RETURN
