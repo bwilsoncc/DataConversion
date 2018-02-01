@@ -1,0 +1,262 @@
+
+/************************************************
+/* Creates coverages of corresponding feature class-> corner points
+/* 
+/* 
+/*
+
+&ECHO &ON 
+&WATCH 10makecornerpoints.O 
+
+&if [exists cornpt1 -cover] &then kill cornpt1 all 
+&if [exists corner -cover] &then kill corner all 
+&s x = [delete NEARCONTROL -INFO] 
+&s x = [delete DLCMASTER -INFO] 
+&s x = [delete xxxyyy.lut -info] 
+
+&if [exists control -cover] &then kill control all 
+&S DLCMASTERPATH = P:\taxmaped\apps\ConvertTwnToGeo\annogencov 
+
+
+COPYINFO P:\taxmaped\apps\biged2\lookupPolk\INFO!ARC!XXXYYY.LUT
+COPYINFO %DLCMASTERPATH%\INFO!ARC!DLCMASTER DLCMASTER
+
+&if ^ [exists %DLCMASTERPATH% -DIRECTORY] &then &do 
+  &message &popup 
+  &type 'ERROR - PATH TO DLCMASTER TABLE
+  &message &on
+  &return ; &return 
+&end 
+
+&if ^ [exists taxbound -cover] &then &do 
+  &message &popup 
+  &type 'ERROR - MISSING TAXBOUND'
+  &message &on
+  &return ; &return 
+&end 
+
+/* 1. Select just ref lines  from taxmap  ************************
+/*20-HWYSTATION
+/*45-SECTION
+/*44-SUBSECTION
+/*47-DLC
+/*48-MEANDERCO
+
+reselect taxmap cornpt1 point 
+res taxmaptype = 20 OR taxmaptype = 44 or taxmaptype = 45 OR TAXMAPTYPE = 47 ~
+OR TAXMAPTYPE = 48 
+[unquote ' '] 
+n
+n
+
+/* 2. Intersect with taxbound to get map number  ************************
+intersect cornpt1 taxbound corner  point
+
+/* 3. add needed items ************************ 
+
+additem corner.Pat corner.Pat CornerSymbol 3 3 i 
+additem corner.Pat corner.Pat CornerDesc 64 64 c 
+additem corner.Pat corner.Pat ControlType 3 3 i 
+additem corner.Pat corner.Pat CommonName 32 32 c 
+additem corner.Pat corner.Pat GCDB 10 10 c 
+additem corner.Pat corner.Pat Easting 8 18 F 5 
+additem corner.Pat corner.Pat Northing 8 18 F 5 
+additem corner.Pat corner.Pat Latitude 8 18 F 5 
+additem corner.Pat corner.Pat Longitude 8 18 F 5 
+
+additem corner.Pat corner.Pat source 20 20 c 
+additem corner.Pat corner.Pat sourcetype 20 20 c 
+
+
+/* 4. assign fields as needed ************************
+
+&data arc info 
+arc
+
+/********************************** Assign values to all 
+
+sel CORNER.PAT
+CALC AUTODATE = AUTO-DATE
+MOVE AUTO-METHOD TO AUTOMETHOD 
+MOVE AUTO-WHO TO AUTOWHO
+MOVE 'OTHER' TO SOURCETYPE
+MOVE 'OLDTAXMAPS' TO SOURCE 
+CALC RELIACODE = 0
+MOVE POINTNAME TO COMMONNAME
+
+/******************************* SET POINT TYPES 
+
+ASEL
+RES TAXMAPTYPE = 20                                     /* Station-corner
+CALC CORNERSYMBOL = 1 
+CALC CONTROLTYPE = 24
+CONCAT COMMONNAME FROM 'STN-',POINTNAME
+
+ASEL
+RES TAXMAPTYPE = 45                                      /* Section
+CALC CORNERSYMBOL = 0 
+CALC CONTROLTYPE = 22
+CONCAT CORNERDESC FROM 'SCTN-',POINTNAME
+
+ASEL
+RES TAXMAPTYPE = 44                                     /* subsection
+CALC CORNERSYMBOL = 0 
+CALC CONTROLTYPE = 21
+CONCAT CORNERDESC FROM 'SUBSCTN-',POINTNAME
+
+
+ASEL
+RES TAXMAPTYPE = 47                                     /* DLC
+CALC CORNERSYMBOL = 5 
+CALC CONTROLTYPE = 7
+CONCAT CORNERDESC FROM 'DLC-',POINTNAME
+
+
+ASEL
+RES TAXMAPTYPE = 48                                     /* MEANDER
+CALC CORNERSYMBOL = 7 
+CALC CONTROLTYPE = 17
+CONCAT CORNERDESC FROM 'MNDR-',POINTNAME'
+
+Q STOP
+&END 
+
+&DATA ARC INFO
+ARC
+
+SEL CORNER.PAT
+RES POINTNAME CN '0' AND POINTNAME NC 'd' AND POINTNAME NC 'c'and POINTNAME NC 'D' and POINTNAME NC 'S' 
+MOVE POINTNAME TO GCDB 
+
+Q STOP
+&END 
+
+
+
+
+/* 5. DROP ITEMS NOT USED ***************************
+
+DROPITEM CORNER.PAT CORNER.PAT 
+CORNPT1#
+CORNPT1-ID
+IGDS-GGNO
+MAPNUM
+TOWN
+RANGE
+SECTION
+QTR
+TAXLOT
+REFOREST
+TAXCODE
+POINTNAME
+CLOSEMETHOD
+CLOSERROR
+LEGACRES1
+LEGACRES2
+MAPACRES
+AUTO-METHOD
+AUTO-REL
+AUTO-WHO
+AUTO-DATE
+GEOTRANSNO
+TAXMAPTYPE
+TAXMAPSYM
+TAXBOUND#
+TAXBOUND-ID
+PAGENUMBER
+ORMAPNUM
+MAPSUFTYPE
+MAPSUFNUM
+TAXLOTC
+MQ
+MQQ
+[UNQUOTE ' '] 
+Y
+Y
+
+&if [exists cornpt1 -cover] &then kill cornpt1 all 
+
+/*******************************************
+/* Match to control to ensure that found corners are correct.
+
+shapearc P:\LISData\control control
+POINTDISTANCE CORNER CONTROL NEARCONTROL 10
+
+&DATA ARC INFO
+ARC
+ 
+SEL NEARCONTROL
+RELATE CORNER.PAT BY CORNER# WITH ORDER
+RELATE CONTROL.PAT 2 BY CONTROL# WITH ORDER 
+RELATE DLCMASTER 3 BY $2GCDB WITH ORDER 
+
+/* 100 SCALE 
+ASEL
+RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 100 AND DISTANCE < .333 and $1CONTROLTYPE = 22
+CALC $1CORNERSYMBOL = 4 
+MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
+MOVE $2SOURCE TO $1SOURCE
+
+ASEL
+MOVE 'SURVEYCONTROL' TO $1SOURCETYPE 
+RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 100 AND DISTANCE < .333 and $1CONTROLTYPE = 7 
+CALC $1CORNERSYMBOL = 6 
+CONCAT $1CORNERDESC  FROM $3CLAIM_NUMB,'-',$3CLAIMANT,'-',$3CORNER_LOC
+MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
+MOVE $2SOURCE TO $1SOURCE
+
+/* 200 SCALE 
+ASEL
+RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 200 AND DISTANCE < .666 and $1CONTROLTYPE = 22 
+CALC $1CORNERSYMBOL = 4 
+MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
+MOVE $2SOURCE TO $1SOURCE
+
+ASEL
+RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 200 AND DISTANCE < .666 and $1CONTROLTYPE = 7 
+CALC $1CORNERSYMBOL = 6 
+CONCAT $1CORNERDESC  FROM $3CLAIM_NUMB,'-',$3CLAIMANT,'-',$3CORNER_LOC
+MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
+MOVE $2SOURCE TO $1SOURCE
+
+/* 400 SCALE 
+ASEL
+RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 400 AND DISTANCE < 3 and $1CONTROLTYPE = 22 
+CALC $1CORNERSYMBOL = 4
+MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
+MOVE $2SOURCE TO $1SOURCE
+
+ASEL
+RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 400 AND DISTANCE < 3 and $1CONTROLTYPE = 7 
+CALC $1CORNERSYMBOL = 6
+CONCAT $1CORNERDESC FROM $3CLAIM_NUMB,'-',$3CLAIMANT,'-',$3CORNER_LOC
+MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
+MOVE $2SOURCE TO $1SOURCE
+
+/* 2000 SCALE 
+ASEL
+RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 2000 AND DISTANCE < 10 and $1CONTROLTYPE = 22 
+CALC $1CORNERSYMBOL = 4 
+MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
+MOVE $2SOURCE TO $1SOURCE
+
+ASEL
+RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 2000 AND DISTANCE < 10 and $1CONTROLTYPE = 7 
+CALC $1CORNERSYMBOL = 6
+CONCAT $1CORNERDESC FROM $3CLAIM_NUMB,'-',$3CLAIMANT,'-',$3CORNER_LOC
+MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
+MOVE $2SOURCE TO $1SOURCE
+
+Q STOP
+&END 
+
+
+&RETURN 
+/********************************************************************
+
+
+
+
+
+
+

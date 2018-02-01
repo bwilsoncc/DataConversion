@@ -1,0 +1,137 @@
+/************************************************
+/* Creates coverages of corresponding feature classes RefLines lines 
+/* 
+/* 
+/*
+
+&WATCH  8MakeRefLines.O 
+&ECHO &ON 
+
+&if [exists Reflin1 -cover] &then kill Reflin1 all 
+&if [exists Refline -cover] &then kill Refline all 
+
+&if ^ [exists taxbound -cover] &then &do 
+  &message &popup 
+  &type 'ERROR - MISSING TAXBOUND'
+  &message &on
+  &return ; &return 
+&end 
+
+/* 1. Select just ref lines  from taxmap  ************************
+
+
+reselect taxmap RefLin1 line 
+res taxmaptype = 33 OR taxmaptype = 9 or taxmaptype = 40 OR TAXMAPTYPE = 15 ~
+OR TAXMAPTYPE = 17 or taxmaptype = 18 
+[unquote ' '] 
+n
+n
+
+/* 2. Intersect with taxbound to get map number  ************************
+intersect reflin1 taxbound refline  line
+
+/* 3. add needed items ************************ 
+
+additem REFLINE.aat REFLINE.aat linetype 3 3 i 
+additem REFLINE.aat REFLINE.aat source 20 20 c 
+additem REFLINE.aat REFLINE.aat sourcetype 20 20 c 
+additem REFLINE.aat REFLINE.aat LoStation 20 20 c 
+additem REFLINE.aat REFLINE.aat HiStation 20 20 c 
+additem refline.aat refline.aat DIRECTION 12 12 c 
+
+/* 4. assign fields as needed ************************
+
+&data arc info 
+arc
+
+/********************************** Assign values to all 
+
+sel REFLINE.AAT 
+CALC AUTODATE = AUTO-DATE
+MOVE AUTO-METHOD TO AUTOMETHOD 
+MOVE AUTO-WHO TO AUTOWHO
+MOVE 'OTHER' TO SOURCETYPE
+MOVE 'OLDTAXMAPS' TO SOURCE 
+CALC RELIACODE = 0
+move ANGLE TO DIRECTION 
+
+/******************************* SET LINE TYPES 
+
+ASEL
+RES TAXMAPTYPE = 33                                     /* historical
+CALC LINETYPE = 33 
+ASEL
+RES TAXMAPTYPE = 9                                      /* Road Centerline
+CALC LINETYPE = 9
+ASEL
+RES TAXMAPTYPE = 40                                     /* Subdivison
+CALC LINETYPE = 40
+ASEL
+RES TAXMAPTYPE = 15                                     /* Railroad Centerline
+CALC LINETYPE = 15
+ASEL
+RES TAXMAPTYPE = 17                                     /* Easement ROW
+CALC LINETYPE = 17
+ASEL
+RES TAXMAPTYPE = 18                                     /* Easement CL
+CALC LINETYPE = 18
+
+Q STOP
+&END 
+
+
+/* 5. DROP ITEMS NOT USED ***************************
+
+DROPITEM REFLINE.AAT REFLINE.AAT               
+REFLIN1#
+REFLIN1-ID
+ANGLE
+TAXMAPSYM
+TAXMAPTYPE
+AUTO-METHOD
+AUTO-REL
+AUTO-WHO
+AUTO-DATE
+TAXBOUND-ID
+TAXBOUND#
+AREA
+PERIMETER
+IGDS-GGNO
+MAPNUM
+TOWN
+RANGE
+SECTION
+QTR
+TAXLOT
+REFOREST
+TAXCODE
+CLOSEMETHOD
+CLOSERROR
+LEGACRES1
+LEGACRES2
+MAPACRES
+POINTNAME
+GEOTRANSNO
+PAGENUMBER
+CITYNAME
+ORMAPNUM
+MAPSUFTYPE
+MAPSUFNUM
+TAXLOTC
+MQ
+MQQ
+[UNQUOTE ' '] 
+Y
+Y
+
+&if [exists Reflin1 -cover] &then kill Reflin1 all 
+
+
+&RETURN 
+/********************************************************************
+LINEFEATURE
+33-HISTORY
+9-ROAD-CL
+40-SUBDIV
+15-RR-CL
+17-ESMT-ROW

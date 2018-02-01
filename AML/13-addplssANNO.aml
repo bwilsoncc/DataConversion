@@ -1,0 +1,20 @@
+&args xcord ycord scale a1 a2 a3 a4 
+
+&echo &on 
+ 
+&s annopath = P:\taxmaped\apps\ConvertTwnToGeo\AnnoGenCov
+
+coordinate keyboard
+get %annopath%/line%scale% SECTION 
+move 
+1,0,0 
+1,%xcord%,%ycord% 
+
+change $text c/D/%A1%/
+change $text c/A/%A2%/
+change $text c/B/%A3%/
+change $text c/C/%A4%/
+calc mapscale = %scale% 
+
+
+&return 

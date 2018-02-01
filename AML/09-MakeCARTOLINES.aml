@@ -1,0 +1,136 @@
+/************************************************
+/* Creates coverages of corresponding feature classes 
+/* 
+/* 
+/*
+
+&ECHO &ON 
+&WATCH 9makecartolines.O 
+&if [exists cartolin -cover] &then kill cartolin all
+&if [exists cartlin1 -cover] &then kill cartlin1 all 
+
+&if ^ [exists taxbound -cover] &then &do 
+  &message &popup 
+  &type 'ERROR - MISSING TAXBOUND'
+  &message &on
+  &return ; &return 
+&end 
+
+/* 1. Select just cartolines from taxmap  ************************
+
+
+reselect taxmap cartlin1 line 
+res taxmaptype > 100 OR taxmaptype = 34 
+[unquote ' '] 
+n
+n
+
+/* 2. Intersect with taxbound to get map number  ************************
+
+intersect cartlin1 taxbound cartolin line 
+
+/* 3. add needed items ************************ 
+
+additem cartolin.aat cartolin.aat linetype 3 3 i 
+
+/* 4. assign fields as needed ************************
+
+&data arc info 
+arc
+
+/********************************** Assign values to all 
+
+sel CARTOLIN.AAT 
+CALC AUTODATE = AUTO-DATE
+MOVE AUTO-METHOD TO AUTOMETHOD 
+MOVE AUTO-WHO TO AUTOWHO 
+
+/******************************* SET LINE TYPES 
+
+ASEL
+CALC LINETYPE = 100 
+RES  TAXMAPTYPE = 34               /* ARROWS 
+CALC LINETYPE = 134                                    /* NOTE - TOM SEPARATES DIMENSION ARROWS 
+ASEL 
+RES TAXMAPTYPE = 134 
+CALC LINETYPE = 100  
+ASEL                                                  /* FROM TICS 
+RES TAXMAPTYPE = 123 OR TAXMAPTYPE = 125 OR TAXMAPTYPE = 127        /* WATER 
+CALC LINETYPE = 125 
+ASEL
+RES TAXMAPTYPE = 137 OR TAXMAPTYPE = 138                            /* TAXLOTS 
+CALC LINETYPE = 137 
+ASEL
+RES TAXMAPTYPE = 154                                                /* TAXCODE 
+CALC LINETYPE = 154                       
+ASEL
+RES TAXMAPTYPE = 20
+CALC LINETYPE = 120                                                /* STATIONS 
+ASEL
+RES TAXMAPTYPE = 141 
+CALC LINETYPE = 141                                                 /* SUBDIV 
+ASEL
+RES TAXMAPTYPE = 145 OR TAXMAPTYPE = 147    
+CALC LINETYPE = 147                                              /* SECTION - DLC   
+
+Q STOP
+&END 
+
+
+/* 5. DROP ITEMS NOT USED ***************************
+
+DROPITEM CARTOLIN.AAT CARTOLIN.AAT
+CARTLIN1#
+CARTLIN1-ID
+ANGLE
+DISTANCE
+RADIUS
+DELTA
+TANGENT
+ARCLENGTH
+SIDE
+RADIUS2
+TANGENT2
+TAXMAPSYM
+TAXMAPTYPE
+AUTO-METHOD
+AUTO-REL
+AUTO-WHO
+AUTO-DATE
+GEOTRANSNO
+TAXBOUND#
+AREA
+PERIMETER
+TAXBOUND-ID
+IGDS-GGNO
+MAPNUM
+TOWN
+RANGE
+SECTION
+QTR
+TAXLOT
+REFOREST
+TAXCODE
+CITYNAME
+CLOSEMETHOD
+CLOSERROR
+LEGACRES1
+LEGACRES2
+MAPACRES
+POINTNAME
+PAGENUMBER
+ORMAPNUM
+MAPSUFTYPE
+MAPSUFNUM
+RELIACODE
+TAXLOTC
+MQ
+MQQ
+[UNQUOTE ' '] 
+Y
+Y
+
+&if [exists cartlin1 -cover] &then kill cartlin1 all 
+
+&RETURN 
+/********************************************************************
