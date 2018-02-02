@@ -1,6 +1,6 @@
 /* --- start
-&WATCH C:\GeoModel\MapProduction\assign_level.wat &COMMANDS
-&WORKSPACE C:\GeoModel\Clatsop\Workfolder\t4-10
+&WATCH C:\GeoModel\MapProduction\15-AssignAnnotationClasses.wat &COMMANDS
+&WORKSPACE C:\GeoModel\Clatsop\Workfolder
 /* --- end
 /*
 /* Prepare for creating annotation classes that correspond to scales.

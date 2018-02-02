@@ -1,0 +1,10 @@
+&args wkspc 
+
+&type %wkspc%
+&s wkspc = %wkspc%\geoDB 
+&type %wkspc% 
+
+&sys C:\Python27\ArcGIS10.4\python.exe 1.ConvertLinesandPoly.py
+&sys C:\Python27\ArcGIS10.4\python.exe 2.ConvertAnno.py %wkspc% 
+
+&s x = [response "xx"]

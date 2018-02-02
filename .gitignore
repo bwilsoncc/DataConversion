@@ -3,3 +3,9 @@
 Scratch.mdb
 .idle.rc
 Source
+*.log
+*.diff
+*.o
+*.wat
+Source
+WorkFolder
