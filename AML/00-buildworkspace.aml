@@ -1,0 +1,11 @@
+&WATCH 00-buildworkspace.wat
+&echo &on 
+&term 9999
+
+/* &s x =  [delete GeoDB -dir]
+/* copyworkspace P:\taxmaped\apps\ConvertTwnToGeo\GeoDB GeoDB
+
+copy C:\GeoModel\Clatsop\GeoDB\taxcodeanno taxcodeanno
+copy C:\GeoModel\Clatsop\GeoDB\taxlotanno taxlotanno
+copy C:\GeoModel\Clatsop\GeoDB\taxmapanno taxmapanno
+
