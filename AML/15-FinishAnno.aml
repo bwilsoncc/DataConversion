@@ -3,9 +3,9 @@
 /********************************************************************************
 /* Input: Some of these are checked for existence
 /*   taxcode
-/*   taxcodan*
 /*   taxlot
-/*   taxlotan*
+/*   taxcodan*		from 04-convert.aml
+/*   taxlotan*		from 04-convert.aml
 /*   taxmap*
 /*
 /*   *must exist
@@ -144,31 +144,35 @@ save
 q
 
 arcedit
-EC TAXLOTAN 
-EF ANNO.IGDS
-SEL ALL 
-PUT TAXLOTANBK IGDS
-SEL ALL
-DELETE
-SAVE
-GET TAXLOTANNO 
-GET TAXLOTANBK 
-SAVE
-Q
+ec taxlotan 
+ef anno.igds
+sel all 
+put taxlotanbk igds
+sel all
+delete
+save
+get taxlotanno 
+get taxlotanbk 
+save
+q
 
 arcedit
-EC TAXCODAN 
-EF ANNO.IGDS
-SEL ALL 
-PUT TAXCODEANBK IGDS
-SEL ALL
-DELETE
-SAVE
-GET TAXCODEANNO 
-GET TAXCODEANBK 
-SAVE
-Q
+ec taxcodan 
+ef anno.igds
+sel all 
+put taxcodeanbk igds
+sel all
+delete
+save
+get taxcodeanno 
+get taxcodeanbk 
+save
+q
 
+/* I don't really care if the TEMP files are deleted or not
+/* because the whole directory tree will be deleted upon project completion
+/* and leaving them around makes debugging easier
+/* but if they are left around it's a clue the process did not complete! 
 &IF [EXISTS TAXLOTANBK -COVER] &THEN KILL TAXLOTANBK 
 &IF [EXISTS TAXCODEANBK -COVER] &THEN KILL TAXCODEANBK
 &IF [EXISTS TAXMAPBK -COVER] &THEN KILL TAXMAPBK 
