@@ -6,6 +6,9 @@
 /* Output:
 /*    taxmap    annotation.igds
 /*    taxseemap annotation.igds
+/*    taxcodan
+/*    taxlotan
+
 &WATCH 04-convertanno.wat &COMMANDS
 &ECHO &ON
 
@@ -133,19 +136,25 @@ Q STOP
 /* 7. CALC FEATURE TYPES TO STANDARD 
 
 arcedit
-EC TAXMAP 
-EF ANNO.IGDS
-SEL $LEVEL = 56
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
-  CALC $LEVEL = 58 
-&END
-SEL $LEVEL = 20 
-RES $TEXT CN 'P.' OR $TEXT CN '+' OR $TEXT CN 'PC' OR $TEXT CN 'EQUATION' or $TEXT CN 'STA. ' or $TEXT CN 'PT' 
-/*RES $TEXT CN 'P.T.' OR $TEXT CN 'P.C.' OR $TEXT CN 'P.R.C.' OR $TEXT CN 'PT' OR $TEXT CN '+'  OR $TEXT CN 'ST ' OR $TEXT CN 'S.T' or $TEXT CN 'STATION'
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
-   NSEL 
-   RES $LEVEL = 20 
+ec taxmap 
+ef anno.igds
+
+/* 56 = Zone annotation
+sel $LEVEL = 56
+&if [show number select] > 0 &then &do
+  /* 58 = Adjacent
+  calc $LEVEL = 58 
+&end
+
+/* 20 = Station
+sel $LEVEL = 20 
+res $TEXT CN 'P.' OR $TEXT CN '+' OR $TEXT CN 'PC' OR $TEXT CN 'EQUATION' or $TEXT CN 'STA. ' or $TEXT CN 'PT' 
+/*res $TEXT CN 'P.T.' OR $TEXT CN 'P.C.' OR $TEXT CN 'P.R.C.' OR $TEXT CN 'PT' OR $TEXT CN '+'  OR $TEXT CN 'ST ' OR $TEXT CN 'S.T' or $TEXT CN 'STATION'
+&if [show number select] > 0 &THEN &DO 
+   NSEL
+   res $LEVEL = 20 
    &IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
+    /* 36 = Reference Notes
      CALC $LEVEL = 36	
    &END 
 &END  
@@ -157,23 +166,25 @@ asel $level = 38 or $level = 39 or $level = 41 or $level = 42  or $level = 43 or
 res $level < 1000 
 nsel 
 
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
-	CALC $LEVEL = 36
-&END 
+&if [show number select] > 0 &then &do
+    /* 36 = Reference Notes
+    calc $LEVEL = 36
+&end 
 
-SEL ALL
-/* CALC $SIZE = 0
-CALC $SYMBOL = $LEVEL 
-CALC LEVEL = $LEVEL 
-
-SEL $LEVEL = 34 or $level = 41 
-CALC $SIZE = $SIZE * 1.4                                /* Dean Added Jan 25 2018 
-
-SAVE 
-Q
+sel all
+/* calc $SIZE = 0
+calc $SYMBOL = $LEVEL 
+calc LEVEL = $LEVEL 
+/* 34 = bearing/distance
+/* 41 = subdivision name
+sel $LEVEL = 34 or $level = 41
+if [show number select] > &then &do
+  calc $SIZE = $SIZE * 1.4                                /* Dean Added Jan 25 2018 
+&end
+save 
+q
 
 /* CALC NEW STANDARD SIZES AS SET BY Tom from Christi --- Dean loaded to $SIZE - Jan 2018 
-
 
 &DATA ARC INFO
 ARC
@@ -266,14 +277,14 @@ n
 
 /* Delete both from Taxmap Anno 
 
-ARCEDIT 
-EC taxmap
-EF anno.igds 
+arcedit 
+ec taxmap
+ef anno.igds 
 sel $level = 37 and ( $text cn 'L' or $text nc 'C' or $text nc 'A' or $text nc 'M' or $text nc 'U' )
-DELETE 
+delete 
 sel $level = 54 
-DELETE 
-SAVE
+delete 
+save
 Q
 
 
@@ -283,54 +294,54 @@ arcedit
 ec taxlotan
 ef anno.igds
 sel mapscale = 100 
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO  
+&if [show number select] > 0 &then &do  
   calc $level = 0
   calc $symbol = 0
 &end 
 sel mapscale = 200 
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
+&if [show number select] > 0 &then &do 
   calc $level = 1
   calc $symbol = 1 
 &end
 sel mapscale = 400 
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
-calc $level = 2
-calc $symbol = 2 
+&if [show number select] > 0 &then &do 
+  calc $level = 2
+  calc $symbol = 2 
 &end
 sel mapscale = 2000 
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
-calc $level = 3
-calc $symbol = 3 
+&if [show number select] > 0 &then &do 
+  calc $level = 3
+  calc $symbol = 3 
 &end
 save 
+
 ec taxcodan 
 ef anno.igds
 sel mapscale = 100 
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
-calc $level = 0
-calc $symbol = 0 
+&if [show number select] > 0 &then &do 
+  calc $level = 0
+  calc $symbol = 0 
 &end 
 sel mapscale = 200 
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO  
-calc $level = 1
-calc $symbol = 1 
+&if [show number select] > 0 &then &do  
+  calc $level = 1
+  calc $symbol = 1 
 &end
 sel mapscale = 400 
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
-calc $level = 2
-calc $symbol = 2 
+&if [show number select] > 0 &then &do 
+  calc $level = 2
+  calc $symbol = 2 
 &end
 sel mapscale = 2000 
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
-calc $level = 3
-calc $symbol = 3 
+&if [show number select] > 0 &then &do 
+  calc $level = 3
+  calc $symbol = 3 
 &end
 save
 Q
 
 addtext TAXLOTAN IGDS 
 addtext TAXCODAN IGDS
-
 
 /* KILL TEMPS 
 
