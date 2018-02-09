@@ -1,11 +1,14 @@
 /************************************************
 /* Creates coverages of corresponding feature classes 
-/* 
-/* 
+/* Input:
+/*   taxmap
+/*   taxbound
+/* Output:
+/*   cartolin annotation
 /*
-
 &ECHO &ON 
-&WATCH 9makecartolines.O 
+&WATCH 09-MakeCARTOLINES.wat
+
 &if [exists cartolin -cover] &then kill cartolin all
 &if [exists cartlin1 -cover] &then kill cartlin1 all 
 
@@ -17,7 +20,6 @@
 &end 
 
 /* 1. Select just cartolines from taxmap  ************************
-
 
 reselect taxmap cartlin1 line 
 res taxmaptype > 100 OR taxmaptype = 34 
@@ -37,17 +39,13 @@ additem cartolin.aat cartolin.aat linetype 3 3 i
 
 &data arc info 
 arc
-
 /********************************** Assign values to all 
-
 sel CARTOLIN.AAT 
 CALC AUTODATE = AUTO-DATE
 MOVE AUTO-METHOD TO AUTOMETHOD 
 MOVE AUTO-WHO TO AUTOWHO 
-
-/******************************* SET LINE TYPES 
-
 ASEL
+/******************************* SET LINE TYPES 
 CALC LINETYPE = 100 
 RES  TAXMAPTYPE = 34               /* ARROWS 
 CALC LINETYPE = 134                                    /* NOTE - TOM SEPARATES DIMENSION ARROWS 
@@ -72,10 +70,8 @@ CALC LINETYPE = 141                                                 /* SUBDIV
 ASEL
 RES TAXMAPTYPE = 145 OR TAXMAPTYPE = 147    
 CALC LINETYPE = 147                                              /* SECTION - DLC   
-
 Q STOP
 &END 
-
 
 /* 5. DROP ITEMS NOT USED ***************************
 

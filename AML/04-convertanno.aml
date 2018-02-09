@@ -1,20 +1,21 @@
-/* creates annotation and sets scale 
-/* 
-/*** - Uses lookup table for annotation sizes... 
-/* P:\taxmaped\apps\ConvertTwnToGeo\AnnoGenCov\info!ARC!ANNOSTD.LUT
-/* 
-
-&WATCH  4ConvertAnno.O 
-
+/* Creates annotation and sets scale 
+/* Input:
+/*    taxbound
+/*    taxmap
+/*    annostd.lut - a table telling what font, fontsize, bold, italic to use for each level and scale
+/* Output:
+/*    taxmap    annotation.igds
+/*    taxseemap annotation.igds
+&WATCH 04-convertanno.wat &COMMANDS
 &ECHO &ON
 
 &if ^ [exists taxbound -cover] &then &do 
-  &type No Taxbound 
+  &type No Taxbound ; did you run 01-MakeMapIndex.aml ??
   &return ; &return 
 &end 
 
 &if ^ [exists taxmap -cover] &then &do 
-  &type no taxmap 
+  &type No taxmap ; did you run 01-MakeMapIndex.aml ??
   &return ; &return 
 &end 
 
@@ -29,9 +30,10 @@
 &S X = [DELETE TAXMAPBK.TATATIGDS -INFO]
 &S X = [DELETE ANNOSTD.LUT -INFO]
 
-copy taxmap taxmapbk                                       /* just in case you mess up
+copy taxmap taxmapbk                 /* just in case you mess up -- normally deleted in last step
 
-COPYINFO P:\taxmaped\apps\ConvertTwnToGeo\AnnoGenCov\info!ARC!ANNOSTD.LUT  ANNOSTD.LUT 
+/*COPYINFO P:\taxmaped\apps\ConvertTwnToGeo\AnnoGenCov\info!ARC!ANNOSTD.LUT  ANNOSTD.LUT 
+COPYINFO C:\GeoModel\Clatsop\AnnoGenCov\info!ARC!ANNOSTD.LUT  ANNOSTD.LUT 
 
 
 
@@ -43,35 +45,50 @@ ADDITEM TAXMAP.TATIGDS TAXMAP.TATIGDS STDSIZE,4,5,B
 
 /* 2. Save annotation for seemaps and save map assignments 
 
-&IF [EXIST TEMPANNO -COVER] &THEN KILL TEMPANNO ALL 
-
-ARCEDIT
-EC TAXMAP
-EF ANNO.IGDS
-SEL $LEVEL > 999
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
-  PUT TEMPANNO 
-  DELETE
-  EF ANNO.SEEMAP 
-  GET TEMPANNO IGDS 
-&END 
-SAVE
-Q
-
+/* Current way Dean does it -- there is a separate annotation.seemap subclass.
+/* We don't have that so we do it the old way.
+/* &IF [EXIST TEMPANNO -COVER] &THEN KILL TEMPANNO ALL 
+/* 
+/* arcedit
+/* ec taxmap
+/* ef anno.igds 
+/* sel $level > 999
+/* &IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
+/*   put tempanno 
+/*   delete
+/*   ef anno.seemap 
+/*   get tempanno igds 
+/* &end 
+/* save
+/* q
+/* arcedit
+/* ec taxmap
+/* ef anno.igds
+/* sel all
+/* calc AUTOWHO = 'MCH' 
+/* calc AUTODATE = $TODAY 
+/* calc AUTOMETHOD =  'CNV'
+/* calc maplevel = $level 
+/* calc mapsize = $size
+/* save
+/* q 
 
 arcedit
 ec taxmap
 ef anno.igds 
-SEL ALL 
-CALC AUTOWHO = 'MCH' 
+sel $level > 1000 
+put taxseemap 
+delete 
+sel all
+calc AUTOWHO = 'MCH' 
 calc AUTODATE = $TODAY 
-CALC AUTOMETHOD =  'CNV'
+calc AUTOMETHOD =  'CNV'
 calc maplevel = $level 
 calc mapsize = $size
 save
 q 
 
-/* 3. Build point coverage for annoation and overlay it with map boundary 
+/* 3. Build point coverage for annotation and overlay it with map boundary 
 /*     using generate and intersect 
 
 &data arc info 
@@ -115,7 +132,7 @@ Q STOP
 
 /* 7. CALC FEATURE TYPES TO STANDARD 
 
-ARCEDIT
+arcedit
 EC TAXMAP 
 EF ANNO.IGDS
 SEL $LEVEL = 56
@@ -312,7 +329,7 @@ save
 Q
 
 addtext TAXLOTAN IGDS 
-ADDTEXT TAXCODAN IGDS
+addtext TAXCODAN IGDS
 
 
 /* KILL TEMPS 
@@ -320,8 +337,4 @@ ADDTEXT TAXCODAN IGDS
 &if [exists tbigds -cover] &then kill tbigds all 
 &if [exists igds -cover] &then kill igds all 
 
-&WATCH &OFF
-
-
 &RETURN
-

@@ -1,12 +1,16 @@
-
 /************************************************
 /* Creates coverages of corresponding feature class-> corner points
 /* 
-/* 
+/* Input:
+/*   taxbound
+/*   DLCMASTER from AnnoGenCov COMMENTED OUT FOR NOW was just copied into the local space
+/*   xxxyyy.lut from K:   I have no idea what this is for, I asked Dean but I don't remember the answer :-)
+/* Output:
+/*   corner annotation and points
+/*   xxxyyy.lut gets copied into our workspace
 /*
-
 &ECHO &ON 
-&WATCH 10makecornerpoints.O 
+&WATCH 10-MakeCornerPoints.wat
 
 &if [exists cornpt1 -cover] &then kill cornpt1 all 
 &if [exists corner -cover] &then kill corner all 
@@ -15,18 +19,19 @@
 &s x = [delete xxxyyy.lut -info] 
 
 &if [exists control -cover] &then kill control all 
-&S DLCMASTERPATH = P:\taxmaped\apps\ConvertTwnToGeo\annogencov 
+/* &S DLCMASTERPATH = P:\taxmaped\apps\ConvertTwnToGeo\annogencov 
+&S DLCMASTERPATH = C:\GeoModel\Clatsop\AnnoGenCov
 
+/* COPYINFO P:\taxmaped\apps\biged2\lookupPolk\INFO!ARC!XXXYYY.LUT
+COPYINFO K:\taxmaped\apps\biged2\lookupclatsop\INFO!ARC!XXXYYY.LUT
 
-COPYINFO P:\taxmaped\apps\biged2\lookupPolk\INFO!ARC!XXXYYY.LUT
-COPYINFO %DLCMASTERPATH%\INFO!ARC!DLCMASTER DLCMASTER
-
-&if ^ [exists %DLCMASTERPATH% -DIRECTORY] &then &do 
-  &message &popup 
-  &type 'ERROR - PATH TO DLCMASTER TABLE
-  &message &on
-  &return ; &return 
-&end 
+/* COPYINFO %DLCMASTERPATH%\INFO!ARC!DLCMASTER DLCMASTER
+/* &if ^ [exists %DLCMASTERPATH% -DIRECTORY] &then &do 
+/*   &message &popup 
+/*   &type 'ERROR - PATH TO DLCMASTER TABLE
+/*   &message &on
+/*   &return ; &return 
+/* &end 
 
 &if ^ [exists taxbound -cover] &then &do 
   &message &popup 
@@ -175,81 +180,6 @@ Y
 Y
 
 &if [exists cornpt1 -cover] &then kill cornpt1 all 
-
-/*******************************************
-/* Match to control to ensure that found corners are correct.
-
-shapearc P:\LISData\control control
-POINTDISTANCE CORNER CONTROL NEARCONTROL 10
-
-&DATA ARC INFO
-ARC
- 
-SEL NEARCONTROL
-RELATE CORNER.PAT BY CORNER# WITH ORDER
-RELATE CONTROL.PAT 2 BY CONTROL# WITH ORDER 
-RELATE DLCMASTER 3 BY $2GCDB WITH ORDER 
-
-/* 100 SCALE 
-ASEL
-RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 100 AND DISTANCE < .333 and $1CONTROLTYPE = 22
-CALC $1CORNERSYMBOL = 4 
-MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
-MOVE $2SOURCE TO $1SOURCE
-
-ASEL
-MOVE 'SURVEYCONTROL' TO $1SOURCETYPE 
-RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 100 AND DISTANCE < .333 and $1CONTROLTYPE = 7 
-CALC $1CORNERSYMBOL = 6 
-CONCAT $1CORNERDESC  FROM $3CLAIM_NUMB,'-',$3CLAIMANT,'-',$3CORNER_LOC
-MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
-MOVE $2SOURCE TO $1SOURCE
-
-/* 200 SCALE 
-ASEL
-RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 200 AND DISTANCE < .666 and $1CONTROLTYPE = 22 
-CALC $1CORNERSYMBOL = 4 
-MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
-MOVE $2SOURCE TO $1SOURCE
-
-ASEL
-RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 200 AND DISTANCE < .666 and $1CONTROLTYPE = 7 
-CALC $1CORNERSYMBOL = 6 
-CONCAT $1CORNERDESC  FROM $3CLAIM_NUMB,'-',$3CLAIMANT,'-',$3CORNER_LOC
-MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
-MOVE $2SOURCE TO $1SOURCE
-
-/* 400 SCALE 
-ASEL
-RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 400 AND DISTANCE < 3 and $1CONTROLTYPE = 22 
-CALC $1CORNERSYMBOL = 4
-MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
-MOVE $2SOURCE TO $1SOURCE
-
-ASEL
-RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 400 AND DISTANCE < 3 and $1CONTROLTYPE = 7 
-CALC $1CORNERSYMBOL = 6
-CONCAT $1CORNERDESC FROM $3CLAIM_NUMB,'-',$3CLAIMANT,'-',$3CORNER_LOC
-MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
-MOVE $2SOURCE TO $1SOURCE
-
-/* 2000 SCALE 
-ASEL
-RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 2000 AND DISTANCE < 10 and $1CONTROLTYPE = 22 
-CALC $1CORNERSYMBOL = 4 
-MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
-MOVE $2SOURCE TO $1SOURCE
-
-ASEL
-RES $1CONTROLTYPE = $2CONTROLTYP AND $1MAPSCALE = 2000 AND DISTANCE < 10 and $1CONTROLTYPE = 7 
-CALC $1CORNERSYMBOL = 6
-CONCAT $1CORNERDESC FROM $3CLAIM_NUMB,'-',$3CLAIMANT,'-',$3CORNER_LOC
-MOVE 'SURVEYCONTROL' TO $1SOURCETYPE
-MOVE $2SOURCE TO $1SOURCE
-
-Q STOP
-&END 
-
 
 &RETURN 
 /********************************************************************

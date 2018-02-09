@@ -1,11 +1,14 @@
 /************************************************
 /* Creates coverages of corresponding feature classes plss lines 
-/* 
-/* 
-/*
+/* Input:
+/*   taxbound
+/*   taxmap
+/* Output:
+/*   plssline, annotation and lines
 
 &ECHO &ON 
-&WATCH 11makeplsslines.O 
+&WATCH 11-MakePLSSLines.wat
+
 &if [exists PLSSline -cover] &then kill PLSSline all 
 &if [exists PLSSline1 -cover] &then kill PLSSline1 all 
 

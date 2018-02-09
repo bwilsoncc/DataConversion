@@ -1,6 +1,12 @@
+/* Does a lot of indecipherable steps...
+/*
+/* Input:
+/*   taxmap
+/* Output:
+/*   taxcode
 &args source
 
-&WATCH 2MakeTaxcode.O 
+&WATCH 02-Maketaxcode.wat
 &ECHO &ON 
 &term 9999 
 
@@ -8,12 +14,11 @@
 /***************************************************************************
 /* 1. delete coverages you will create and check if inputs are present 
 
-
 &if [exists taxcode -cover] &then kill taxcode all
 &if [exists taxcode1 -cover] &then kill taxcode1 all
 
 &if ^ [exists taxmap -cover] &then &do 
- &type no taxmap 
+ &type No taxmap ; did you run 01-makemapindex.aml??
   &return ; &return 
 &end 
 
@@ -24,7 +29,7 @@ PRECISION DOUBLE DOUBLE
 arcedit
 ec taxmap 
 ef arc
-sel taxmaptype = 62 or taxmaptype = 53
+sel taxmaptype = 51 or taxmaptype = 53
 put taxcode1
 ef label
 sel taxmaptype = 54
@@ -66,7 +71,7 @@ CTAXCODE,,,,,,,,,,,
 ALTER OTAXCODE 
 TAXCODE,,,,,,,,,,,, 
 
-CALC COUNTY = 27                                      /**** ASSIGN COUNTY NUMBER!
+CALC COUNTY = 4                                      /**** ASSIGN COUNTY NUMBER!
  
 MOVE 'OLD TAXMAPS' TO SOURCE 
 CALC YEARCREATED = $TODAY  
@@ -100,9 +105,6 @@ Q STOP
 
 
 &if [exists taxcode1 -cover] &then kill taxcode1 all
-
-
-&WATCH &OFF
 
 &return
 

@@ -1,10 +1,12 @@
 /************************************************
 /* Creates coverages of corresponding feature classes RefLines lines 
-/* 
-/* 
-/*
+/* Input:
+/*   taxbound
+/*   taxmap
+/* Output:
+/*   refline
 
-&WATCH  8MakeRefLines.O 
+&WATCH 08-MakeRefLines.wat
 &ECHO &ON 
 
 &if [exists Reflin1 -cover] &then kill Reflin1 all 
@@ -19,10 +21,8 @@
 
 /* 1. Select just ref lines  from taxmap  ************************
 
-
 reselect taxmap RefLin1 line 
-res taxmaptype = 33 OR taxmaptype = 9 or taxmaptype = 40 OR TAXMAPTYPE = 15 ~
-OR TAXMAPTYPE = 17 or taxmaptype = 18 
+res taxmaptype = 33 OR taxmaptype = 9 or taxmaptype = 40 OR TAXMAPTYPE = 15 OR TAXMAPTYPE = 17 or taxmaptype = 18 
 [unquote ' '] 
 n
 n
@@ -41,11 +41,9 @@ additem refline.aat refline.aat DIRECTION 12 12 c
 
 /* 4. assign fields as needed ************************
 
+/********************************** Assign values to all 
 &data arc info 
 arc
-
-/********************************** Assign values to all 
-
 sel REFLINE.AAT 
 CALC AUTODATE = AUTO-DATE
 MOVE AUTO-METHOD TO AUTOMETHOD 
@@ -54,9 +52,7 @@ MOVE 'OTHER' TO SOURCETYPE
 MOVE 'OLDTAXMAPS' TO SOURCE 
 CALC RELIACODE = 0
 move ANGLE TO DIRECTION 
-
 /******************************* SET LINE TYPES 
-
 ASEL
 RES TAXMAPTYPE = 33                                     /* historical
 CALC LINETYPE = 33 
@@ -75,10 +71,8 @@ CALC LINETYPE = 17
 ASEL
 RES TAXMAPTYPE = 18                                     /* Easement CL
 CALC LINETYPE = 18
-
 Q STOP
 &END 
-
 
 /* 5. DROP ITEMS NOT USED ***************************
 

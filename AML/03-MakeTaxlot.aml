@@ -2,24 +2,30 @@
 
 /*  Dean 10/24/05
 /********************************************************************************
+/* Input:
+/*   taxmap
+/* Output:
+/*   taxlot
+/* It will have points, lines, labels
+/* and "taxlotpt" for labels -- it's the points from the "taxlot" label fc
 
-&WATCH 3MAKETAXLOT.O 
+&WATCH 03-MakeTaxlot.wat
 &ECHO &ON 
 &term 9999 
 
 /***************************************************************************
 /* 1. delete coverages you will create and check if inputs are present 
 
-
 &if [exists taxlot -cover] &then kill taxlot all
 &if [exists taxlotpt -cover] &then kill taxlotpt all
 &if [exists oldtaxlot -cover] &then kill oldtaxlot all
 
 &if ^ [exists taxmap -cover] &then &do 
- &type no taxmap 
+ &type No taxmap; did you run 01-MakeMapIndex.aml??
   &return ; &return 
 &end 
 
+/* I think this is really a "tmptaxlot" file and notice it gets deleted when we finish
 copy %source%/taxlot oldtaxlot 
 
 /* 2. CREATE TAXLOT coverage 
@@ -97,25 +103,27 @@ ADDITEM TAXLOT.AAT TAXLOT.AAT AUTOWHO,30,30,C
 /* 4. calc values 
 
 arcedit
-display 100
 ec taxmap 
 ef arc    
 
-sel taxmaptype = 8 or taxmaptype = 14 or taxmaptype = 32 or taxmaptype = 62  /* Dean changed for Donna 
+/* I don't know why taxmaptype 51 is in here, it seems wrong to me
+sel taxmaptype = 8 or taxmaptype = 14 or taxmaptype = 32 or taxmaptype = 51
+/* I think this is correct, RxR, Road or Parcel
 /*sel taxmaptype = 8 or taxmaptype = 14 or taxmaptype = 32
 put taxlot
+/* Coverage already exists. Do you want to append?
 Y
-EC OLDTAXLOT 
+EC OLDTAXLOT                      /* Used to read SOURCE directly here
 ef label  
 sel taxmaptype = 31               /* BRINGING TAXLOT LABELS FROM TAXLOT COVER
-put taxlot                        /* TO ENSURE WE GET MAP NUMBER & TALXOT KEY INFO RIGHT 
-Y                                           
-save  
+put taxlot                        /* TO ENSURE WE GET MAP NUMBER & TAXLOT KEY INFO RIGHT 
+Y
+save
 q
 
-clean taxlot # 10 .05  
+clean taxlot # 10 .05
 
-/* Recreate taxlot key - IN THE POLK KEY THE TAXLOT IN RIGHT JUSTIFIED... 
+/* Recreate taxlot key - IN THE POLK KEY THE TAXLOT IS RIGHT JUSTIFIED... 
 
 &data arc info 
 arc
@@ -126,7 +134,6 @@ Q STOP
 
 /***********  Dean made following update so maptaxlot is consistent with ORCATS - Dean 10/17 *************************/ 
 arcedit
-display 100
 ec taxlot 
 ef label  
 
@@ -173,13 +180,12 @@ CALC RELIACODE = AUTO-REL
 MOVE AUTO-METHOD TO AUTOMETHOD 
 MOVE 'OTHER' TO SOURCETYPE 
 MOVE 'OLDTAXMAPS' TO SOURCE 
-RES TAXMAPTYPE = 62 
-CALC LINETYPE = 32 
-
+/* RES TAXMAPTYPE = 62                         /* Dean added this recently, don't know why
+/* CALC LINETYPE = 32                          /* Dean added this recently, don't know why
 
 SEL TAXLOT.PAT                                  /* CALC POLYGONS 
 
-CALC COUNTY = 27                                /* Assign County number! 
+CALC COUNTY = 4                                /* Assign County number! 
 MOVE 'N' TO TOWNDIR 
 MOVE 'W' TO RANGEDIR 
 CALC TOWNPART = 0 
@@ -188,7 +194,8 @@ CALC SECNUMBER = SECTION
 MOVE '---' TO MAPSUFTYPE 
 MOVE '000' TO MAPSUFNUM
 MOVE '--' TO ANOMALY
-CALC MAPACRES = AREA / 43560  
+/* CALC MAPACRES = AREA / 43560    /* Sometimes fails with overflow error
+CALC MAPACRES = 0                  /* WE NEED TO FIX THIS EVENTUALLY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 CALC TAXLOTACRE = LEGACRES1 
 
 ALTER QTR                                         /* PLAY WITH QUARTER QUARTER SECITON NUMBERS
@@ -211,7 +218,7 @@ MOVE AUTO-WHO TO AUTOWHO
                                                        /* GET ORMAP NUMBER STUFF RIGHT
 
 MOVE MAPNUM TO MAPNUMBER 
-CONCACT ORMAPNUM FROM '27',TOWN,'.00','S',RANGE,'.00','W',SECTION,QTR,QTRQTR,'--0000'
+CONCACT ORMAPNUM FROM '04',TOWN,'.00','S',RANGE,'.00','W',SECTION,QTR,QTRQTR,'--0000'
 CONCAT ORTAXLOT FROM ORMAPNUM,TAXLOT
 
 Q STOP
@@ -274,7 +281,5 @@ build taxlotpt point
 
 
 &if [exists oldtaxlot -cover] &then kill oldtaxlot all
-
-&WATCH &OFF
 
 &RETURN 

@@ -1,9 +1,21 @@
 /* Finishes annotation - drops fields not needed.
 /*  Dean 9/24/05
 /********************************************************************************
+/* Input: Some of these are checked for existence
+/*   taxcode
+/*   taxcodan*
+/*   taxlot
+/*   taxlotan*
+/*   taxmap*
+/*
+/*   *must exist
+/*
+/* Output:
+/*   Inputs are updated
+/* If they exist, drops temp files taxlotanbk, taxcodeanbk, taxmapbk, taxmapbktc
 
-&s x = [delete 15-FinishAnno.o -file] 
-&WATCH 15-FinishAnno.o 
+&s x = [delete 15-FinishAnno.wat -file] 
+&WATCH 15-FinishAnno.wat
 &ECHO &ON 
 &term 9999 
 DISPLAY 100
@@ -110,25 +122,26 @@ Y
 /* Q
 
 
-/* 6.  Added template coverage so annotation gets the correct symbols and levels for each layer 
-
+/* 6.  Added template coverage so annotation gets the correct symbols and levels for each layer
 &if [exists taxmapanbk -cover] &then kill taxmapanbk all 
 &if [exists taxlotanbk -cover] &then kill taxlotanbk all 
 &if [exists taxcodeanbk -cover] &then kill taxcodeanbk all 
 
+/* Anno created in 04-convertanno.aml is edited
 
+/* Select all annotation from taxmap coverage and copy it to taxmapanbk
 arcedit
-EC TAXMAP 
-EF ANNO.IGDS
-SEL ALL 
-PUT TAXMAPANBK IGDS
-SEL ALL
-DELETE
-SAVE
-GET TAXMAPANNO 
-GET TAXMAPANBK 
-SAVE
-Q
+ec taxmap 
+ef anno.igds
+sel all 
+put taxmapanbk igds
+sel all
+delete
+save
+get taxmapanno 
+get taxmapanbk 
+save
+q
 
 arcedit
 EC TAXLOTAN 

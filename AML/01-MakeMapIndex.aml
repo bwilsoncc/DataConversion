@@ -1,13 +1,19 @@
 /* 
 /*  Dean 10/24/05
-/********************************************************************************
 
+/* Input:
+/*   taxmap coverage from the source workspace
+/* Output:
+/*   taxmap    basically a copy of the source taxmap coverage
+/*   taxbound  map and detail map polygons extracted from taxmap
+/*   mapindex  taxmap with a bunch of fields dropped and MAPSCALE added and filled in
+
+/********************************************************************************
 &args source
-&WATCH  1MakeIndex.O 
+&WATCH 01-MakeMapIndex.wat
 &ECHO &ON 
 &term 9999 
-DISPLAY 100
-
+DISPLAY 9999 1
 
 /***************************************************************************
 /* 1. delete coverages you will create and check if inputs are present 
@@ -31,7 +37,7 @@ additem taxmap.tatigds taxmap.tatigds mapscale 5 5 i
 additem taxmap.tatigds taxmap.tatigds mapnumber 20 20 c 
 
 
-/* 2. make taxbound and taxdetail polygons 
+/* 2. make taxbound and taxdetail polygons => taxbound coverage
 
 PRECISION DOUBLE DOUBLE 
 
@@ -39,10 +45,10 @@ arcedit
 
 EC TAXMAP 
 ef arc
-sel taxmaptype = 62 
+sel taxmaptype = 51 or taxmaptype = 52
 put taxbound
 ef label
-sel taxmaptype = 62 
+sel taxmaptype = 51 or taxmaptype = 52
 put taxbound
 
 save 
@@ -76,11 +82,13 @@ Q STOP
 &END 
 
 /* 4. CALCULATE MAP NUMBER INFORMATION
+/* Used to be called "3. CALCULATE SCALE FOR TAXDETAIL"
+/* which seems more accurate to me.
 
 &DATA ARC INFO
 ARC
 SEL TAXBOUND.PAT 
-MOVE '---' TO MAPSUFTYPE 
+MOVE '---' TO MAPSUFTYPE /* Used to be '0'
 MOVE '000' TO MAPSUFNUM 
 CALC PAGENUMBER = 1
 
@@ -89,26 +97,75 @@ MOVE AUTO-METHOD TO AUTOMETHOD
 CALC RELIACODE = 0 
 MOVE AUTO-WHO TO AUTOWHO 
 
-MOVE MAPNUM TO MAPNUMBER 
-CONCACT ORMAPNUM FROM '27',TOWN,'.00','S0',RANGE,'.00','W',SECTION,QTR,'--0000'
+MOVE MAPNUM TO MAPNUMBER
+CONCACT ORMAPNUM FROM '04',TOWN,'.00','S0',RANGE,'.00','W',SECTION,QTR,'--0000'
 
-CALC MAPSCALE = 2000 
+/* Set the scale based on section, qsection, qqsection
+CALC MAPSCALE = 2000 /* 1:24000
 RES SECTION > 0 
-CALC MAPSCALE = 400 
+CALC MAPSCALE = 400  /*  1:4800
 RES QTR NC '00' 
-CALC MAPSCALE = 200 
+CALC MAPSCALE = 200  /*  1:2400
 RES QTR NC '0'
-CALC MAPSCALE = 100 
-
+CALC MAPSCALE = 100  /*  1:1200
 
 Q STOP
 &END 
 
+/* +--------- Brian pasted this section in from ConvertAMLS
+/* |
+/* 4. CALCULATE DETAIL AND ORMAPNUM FOR DETAILS 
+/* NOTE.... THIS IS STRANGE SECTION. CLATSOP DOES NOT HAVE DETAILS OR SUFFIX MAPS 
+/* NUMBERED. SO I ADDED A SUFFIX NUMBER TO THE FILE AND NOW I HAVE TO GO THRU MAP 
+/* NUMBER BY MAP NUMBER AND ASSIGN THEM A NUMBER. I DID THIS USING AN INFO PROGRMA 
+/* 
+
+&DATA ARC INFO 
+ARC
+SEL TAXBOUND.PAT 
+ERASE CALCSUFNUM
+Y
+PROGRAM CALCSUFNUM
+FORMAT $CHR10,10,10,C
+FORMAT $NUM1,4,4,I
+SEL TAXBOUND.PAT
+RES DETAILSCALE > 0 
+CALC MAPSCALE = DETAILSCALE 
+MOVE 'D' TO MAPSUFTYPE 
+SORT MAPNUM
+CALC $NUM1 = 1
+MOVE ' ' TO $CHR10
+PROGRAM SECTION 2
+CALC MAPSUFNUM = 1
+IF MAPNUM = $CHR10
+  CALC $NUM1 = $NUM1 + 1
+  CALC MAPSUFNUM = $NUM1
+  CALC PAGENUMBER = MAPSUFNUM
+ENDIF
+IF MAPNUM NE $CHR10
+  CALC $NUM1 = 1
+  CALC MAPSUFNUM = 1
+  CALC PAGENUMBER = MAPSUFNUM 
+ENDIF
+MOVE MAPNUM TO $CHR10
+PROGRAM SECTION 2N
+ASEL
+SORT TAXBOUND#
+
+RUN CALCSUFNUM
+
+ASEL
+RES DETAILSCALE > 0 
+CONCACT ORMAPNUM FROM '040',TOWN,'.00','N',RANGE,'.00','W',SECTION,QTR,'--D',MAPSUFNUM
+
+Q STOP
+&END
+/* |
+/* +---------
 
 /* 7. GET RID OF LEADING ZEROES IN ORMAPNUM 
 
 ARCEDIT 
-DISPLAY 100
 EC TAXBOUND
 EF LABEL 
 SEL ALL
@@ -151,6 +208,10 @@ MQQ
 Y
 Y
 
+/* .aat is the attribute data
+/* This adds a new field to the line fc (arc)
+/* called "CURRENT" and sets it to "Y"
+
 &s x = [delete mapindex.aat -info] 
 build mapindex line 
 additem mapindex.aat mapindex.aat current 1 1 c 
@@ -164,8 +225,6 @@ Q STOP
 &END 
 
 &if [exists taxtemp -cover] &then kill taxtemp all
-
-&WATCH &OFF
 
 &RETURN
 

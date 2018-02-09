@@ -1,11 +1,14 @@
 /************************************************
 /* Creates coverages of corresponding feature classes water lines
 /* 
+/* Input:
+/*   taxbound
 /* 
-/*
+/* Output:
+/*   waterlin annotation and lines
 
 &ECHO &ON 
-&WATCH 12makewaterlines.O 
+&WATCH 12-MakeWaterLines.wat
 &if [exists waterln1 -cover] &then kill waterln1 all
 &if [exists waterlin -cover] &then kill waterlin all
 
