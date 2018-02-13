@@ -1,13 +1,25 @@
-&args source
+/* See FIXME, we're putting 0 in acres due to an ARC overflow error
+/* I think I can either ignore that or fix it in python later.
+
+/* This script is IDEMPOTENT,
+/* it does not change inputs,
+/* it creates taxlot and taxlotpt
 
 /*  Dean 10/24/05
 /********************************************************************************
+/* Args:
+/*   source     workspace containing read-only source data
+/* 
 /* Input:
-/*   taxmap
+/*   %source%/taxlot
+/*   tmptaxmap1
+/* 
 /* Output:
-/*   taxlot
-/* It will have points, lines, labels
-/* and "taxlotpt" for labels -- it's the points from the "taxlot" label fc
+/*   taxlot   -- arc, point, label pt feature classes
+/*   taxlotpt -- it's the points from the "taxlot" label fc
+
+&args source
+/* For example, &r 03-maketaxlot.aml %PROJECTHOME%/Source/t4-6
 
 &WATCH 03-MakeTaxlot.wat
 &ECHO &ON 
@@ -16,112 +28,136 @@
 /***************************************************************************
 /* 1. delete coverages you will create and check if inputs are present 
 
-&if [exists taxlot -cover] &then kill taxlot all
-&if [exists taxlotpt -cover] &then kill taxlotpt all
-&if [exists oldtaxlot -cover] &then kill oldtaxlot all
-
-&if ^ [exists taxmap -cover] &then &do 
- &type No taxmap; did you run 01-MakeMapIndex.aml??
+&if ^ [exists tmptaxmap1 -cover] &then &do 
+ &type No tmptaxmap1, did you run 01-MakeMapIndex.aml??
   &return ; &return 
 &end 
 
-/* I think this is really a "tmptaxlot" file and notice it gets deleted when we finish
-copy %source%/taxlot oldtaxlot 
+&do name &list taxlot, taxlotpt, taxlotbk
+  &if [exists %name% -cover] &then kill %name% all
+&end
 
-/* 2. CREATE TAXLOT coverage 
+/* This gets deleted when we finish
+copy %source%/taxlot taxlotbk 
+
+/* 2. Create taxlot coverage 
 
 PRECISION DOUBLE DOUBLE 
+
 create taxlot 
 build taxlot line
 build taxlot point 
-TOLERANCE TAXLOT FUZZY .01 
+tolerance taxlot FUZZY .01 
 
-/* 3. add fields 
+/* 3. Add point attribute fields
 
-ADDITEM TAXLOT.PAT TAXLOT.PAT COUNTY,2,2,I 
-ADDITEM TAXLOT.PAT TAXLOT.PAT TOWN,2,2,I 
-ADDITEM TAXLOT.PAT TAXLOT.PAT TOWNPART, 3,3,N,2
-ADDITEM TAXLOT.PAT TAXLOT.PAT TOWNDIR,1,1,c 
-ADDITEM TAXLOT.PAT TAXLOT.PAT RANGE,2,2,I                          
-ADDITEM TAXLOT.PAT TAXLOT.PAT RANGEPART,3,3,n,2              
-ADDITEM TAXLOT.PAT TAXLOT.PAT RANGEDIR ,1,1,c  
-ADDITEM TAXLOT.PAT TAXLOT.PAT SECTION,2,2,I             
-ADDITEM TAXLOT.PAT TAXLOT.PAT SECNUMBER,2,2,I  
-ADDITEM TAXLOT.PAT TAXLOT.PAT QTR, 2,2 ,C             
-ADDITEM TAXLOT.PAT TAXLOT.PAT STQTR,1,1,c                            
-ADDITEM TAXLOT.PAT TAXLOT.PAT QTRQTR,1,1,c                    
-ADDITEM TAXLOT.PAT TAXLOT.PAT ANOMALY,2,2,c                
-ADDITEM TAXLOT.PAT TAXLOT.PAT MAPSUFTYPE ,1,1,c         
-ADDITEM TAXLOT.PAT TAXLOT.PAT MAPSUFNUM,4,4,I            
-ADDITEM TAXLOT.PAT TAXLOT.PAT MAPNUMBER,20,20,c
-ADDITEM TAXLOT.PAT TAXLOT.PAT MAPNUM,10,10,C 
-ADDITEM TAXLOT.PAT TAXLOT.PAT ORMAPNUM,24,24,c        
-ADDITEM TAXLOT.PAT TAXLOT.PAT TAXLOT,5,5,c                       
-ADDITEM TAXLOT.PAT TAXLOT.PAT SPECIALINT,1,1,c               
-ADDITEM TAXLOT.PAT TAXLOT.PAT MAPTAXLOT ,25,25,c          
-ADDITEM TAXLOT.PAT TAXLOT.PAT ORTAXLOT,29,29,c  
-ADDITEM TAXLOT.PAT TAXLOT.PAT TAXLOTFEET,8,8,I 
-ADDITEM TAXLOT.PAT TAXLOT.PAT TAXLOTACRE,8,8,N,2 
-ADDITEM TAXLOT.PAT TAXLOT.PAT MAPACRES,8,8,N,2 
-ADDITEM TAXLOT.PAT TAXLOT.PAT RELIACODE,2,2,I 
-ADDITEM TAXLOT.PAT TAXLOT.PAT AUTODATE,8,10,D
-ADDITEM TAXLOT.PAT TAXLOT.PAT AUTOMETHOD,3,3,C 
-ADDITEM TAXLOT.PAT TAXLOT.PAT AUTOWHO,30,30,C 
-ADDITEM TAXLOT.PAT TAXLOT.PAT TAXMAPKEY,12,12,C 
-ADDITEM TAXLOT.PAT TAXLOT.PAT LEGACRES1 9 9 N 2 
+additem taxlot.pat taxlot.pat COUNTY,2,2,I 
+additem taxlot.pat taxlot.pat TOWN,2,2,I 
+additem taxlot.pat taxlot.pat TOWNPART, 3,3,N,2
+additem taxlot.pat taxlot.pat TOWNDIR,1,1,c 
+additem taxlot.pat taxlot.pat RANGE,2,2,I                          
+additem taxlot.pat taxlot.pat RANGEPART,3,3,n,2              
+additem taxlot.pat taxlot.pat RANGEDIR ,1,1,c  
+additem taxlot.pat taxlot.pat SECTION,2,2,I             
+additem taxlot.pat taxlot.pat SECNUMBER,2,2,I  
+additem taxlot.pat taxlot.pat QTR, 2,2 ,C             
+additem taxlot.pat taxlot.pat STQTR,1,1,c                            
+additem taxlot.pat taxlot.pat QTRQTR,1,1,c                    
+additem taxlot.pat taxlot.pat ANOMALY,2,2,c                
+additem taxlot.pat taxlot.pat MAPSUFTYPE ,1,1,c         
+additem taxlot.pat taxlot.pat MAPSUFNUM,4,4,I            
+additem taxlot.pat taxlot.pat MAPNUMBER,20,20,c
+additem taxlot.pat taxlot.pat MAPNUM,10,10,C 
+additem taxlot.pat taxlot.pat ORMAPNUM,24,24,c        
+additem taxlot.pat taxlot.pat TAXLOT,5,5,c                       
+additem taxlot.pat taxlot.pat SPECIALINT,1,1,c               
+additem taxlot.pat taxlot.pat MAPTAXLOT ,25,25,c          
+additem taxlot.pat taxlot.pat ORTAXLOT,29,29,c  
+additem taxlot.pat taxlot.pat TAXLOTFEET,8,8,I 
+additem taxlot.pat taxlot.pat TAXLOTACRE,8,8,N,2 
+additem taxlot.pat taxlot.pat MAPACRES,8,8,N,2 
+additem taxlot.pat taxlot.pat RELIACODE,2,2,I 
+additem taxlot.pat taxlot.pat AUTODATE,8,10,D
+additem taxlot.pat taxlot.pat AUTOMETHOD,3,3,C 
+additem taxlot.pat taxlot.pat AUTOWHO,30,30,C 
+additem taxlot.pat taxlot.pat TAXMAPKEY,12,12,C 
+additem taxlot.pat taxlot.pat LEGACRES1 9 9 N 2 
 
-ADDITEM TAXLOT.PAT TAXLOT.PAT TAXMAPTYPE,3,3,I 
-ADDITEM TAXLOT.PAT TAXLOT.PAT AUTO-WHO,3,3,C 
-ADDITEM TAXLOT.PAT TAXLOT.PAT AUTO-METHOD,3,3,C 
-ADDITEM TAXLOT.PAT TAXLOT.PAT AUTO-DATE,8,10,D 
+additem taxlot.pat taxlot.pat TAXMAPTYPE,3,3,I 
+additem taxlot.pat taxlot.pat AUTO-WHO,3,3,C 
+additem taxlot.pat taxlot.pat AUTO-METHOD,3,3,C 
+additem taxlot.pat taxlot.pat AUTO-DATE,8,10,D
 
-ADDITEM TAXLOT.AAT TAXLOT.AAT TAXMAPTYPE,3,3,I 
-ADDITEM TAXLOT.AAT TAXLOT.AAT AUTO-WHO,3,3,C 
-ADDITEM TAXLOT.AAT TAXLOT.AAT AUTO-METHOD,3,3,C 
-ADDITEM TAXLOT.AAT TAXLOT.AAT AUTO-DATE,8,10,D 
-ADDITEM TAXLOT.AAT TAXLOT.AAT AUTO-REL,1,1,I 
+/* Add taxlot line attributes
+
+additem taxlot.aat taxlot.aat TAXMAPTYPE,3,3,I 
+additem taxlot.aat taxlot.aat AUTO-WHO,3,3,C 
+additem taxlot.aat taxlot.aat AUTO-METHOD,3,3,C 
+additem taxlot.aat taxlot.aat AUTO-DATE,8,10,D 
+additem taxlot.aat taxlot.aat AUTO-REL,1,1,I 
  
-ADDITEM TAXLOT.AAT TAXLOT.AAT LINETYPE,3,3,I
-ADDITEM TAXLOT.AAT TAXLOT.AAT DIRECTION,12,12,C 
-ADDITEM TAXLOT.AAT TAXLOT.AAT DISTANCE,10,10,C
-ADDITEM TAXLOT.AAT TAXLOT.AAT ANGLE,10,10,C
-ADDITEM TAXLOT.AAT TAXLOT.AAT DELTA,10,10,C
-ADDITEM TAXLOT.AAT TAXLOT.AAT RADIUS,10,10,C 
-ADDITEM TAXLOT.AAT TAXLOT.AAT RADIUS2,10,10,C
-ADDITEM TAXLOT.AAT TAXLOT.AAT TANGENT,10,10,C 
-ADDITEM TAXLOT.AAT TAXLOT.AAT TANGENT2,10,10,C
-ADDITEM TAXLOT.AAT TAXLOT.AAT ARCLENGTH,10,10,C 
-ADDITEM TAXLOT.AAT TAXLOT.AAT SIDE,1,1,C
-ADDITEM TAXLOT.AAT TAXLOT.AAT SOURCE,20,20,C
-ADDITEM TAXLOT.AAT TAXLOT.AAT SOURCETYPE,20,20,C
-ADDITEM TAXLOT.AAT TAXLOT.AAT RELIACODE,2,2,I 
-ADDITEM TAXLOT.AAT TAXLOT.AAT AUTODATE,8,10,D
-ADDITEM TAXLOT.AAT TAXLOT.AAT AUTOMETHOD,3,3,C 
-ADDITEM TAXLOT.AAT TAXLOT.AAT AUTOWHO,30,30,C 
+additem taxlot.aat taxlot.aat LINETYPE,3,3,I
+additem taxlot.aat taxlot.aat DIRECTION,12,12,C 
+additem taxlot.aat taxlot.aat DISTANCE,10,10,C
+additem taxlot.aat taxlot.aat ANGLE,10,10,C
+additem taxlot.aat taxlot.aat DELTA,10,10,C
+additem taxlot.aat taxlot.aat RADIUS,10,10,C 
+additem taxlot.aat taxlot.aat RADIUS2,10,10,C
+additem taxlot.aat taxlot.aat TANGENT,10,10,C 
+additem taxlot.aat taxlot.aat TANGENT2,10,10,C
+additem taxlot.aat taxlot.aat ARCLENGTH,10,10,C 
+additem taxlot.aat taxlot.aat SIDE,1,1,C
+additem taxlot.aat taxlot.aat SOURCE,20,20,C
+additem taxlot.aat taxlot.aat SOURCETYPE,20,20,C
+additem taxlot.aat taxlot.aat RELIACODE,2,2,I 
+additem taxlot.aat taxlot.aat AUTODATE,8,10,D
+additem taxlot.aat taxlot.aat AUTOMETHOD,3,3,C 
+additem taxlot.aat taxlot.aat AUTOWHO,30,30,C 
 
 
-/* 4. calc values 
+/* 4. Calc values 
 
 arcedit
-ec taxmap 
-ef arc    
 
-/* I don't know why taxmaptype 51 is in here, it seems wrong to me
+/* Select the lines from tmptaxmap1 that will be copied into taxlot lines
+ec tmptaxmap1
+ef arc
+
+/* 8  road
+/* 14 rxr
+/* 31 taxlot labels (apparently)
+/* 32 parcel
+/* 51 map boundary
+
+/* I don't know why taxmaptype 51 is in here, it seems wrong to me but I am going with it.
 sel taxmaptype = 8 or taxmaptype = 14 or taxmaptype = 32 or taxmaptype = 51
-/* I think this is correct, RxR, Road or Parcel
-/*sel taxmaptype = 8 or taxmaptype = 14 or taxmaptype = 32
+
 put taxlot
-/* Coverage already exists. Do you want to append?
+/* Coverage already exists. Do you want to append?  (we just created it up above so this is okay)
 Y
-EC OLDTAXLOT                      /* Used to read SOURCE directly here
+
+/* I get a warning about the arc attributes not matching,
+/* but it's specious because we are going to populate the attributes down below...
+
+
+/* ************************************************************************
+/* Copy the "label" point fc from "taxlotbk"
+/* Since there is no label fc in "taxlot" the warning about attributes not matching is specious.
+
+ec taxlotbk                 /* Used to read SOURCE directly here, not sure why it matters
 ef label  
-sel taxmaptype = 31               /* BRINGING TAXLOT LABELS FROM TAXLOT COVER
-put taxlot                        /* TO ENSURE WE GET MAP NUMBER & TAXLOT KEY INFO RIGHT 
+
+sel taxmaptype = 31          /* BRINGING TAXLOT LABELS FROM TAXLOT COVER
+put taxlot                   /* TO ENSURE WE GET MAP NUMBER & TAXLOT KEY INFO RIGHT
+/* "...TAXLOT already exists, do you want to append?"
+/* The coverage exists, but there is no label fc until this runs
 Y
-save
+
+/* save    DONT save here we don't want to modify the input file tmptaxmap1
 q
 
 clean taxlot # 10 .05
+
 
 /* Recreate taxlot key - IN THE POLK KEY THE TAXLOT IS RIGHT JUSTIFIED... 
 
@@ -134,6 +170,7 @@ Q STOP
 
 /***********  Dean made following update so maptaxlot is consistent with ORCATS - Dean 10/17 *************************/ 
 arcedit
+
 ec taxlot 
 ef label  
 
@@ -145,28 +182,28 @@ sel TOWN < 10                         /* GET RID OF LEADING BLANK IN TOWNSHIP < 
 sel all                               /* GET RID OF LEADING BLANK IN ALL RANGES 
 CHANGE MAPTAXLOT C/ // 
 
-SEL SECTION = 0 
+sel SECTION = 0 
 &if [show number select] > 0 &then &do
   CHANGE MAPTAXLOT C/ 0// 
 &end
- 
 
 SAVE
 Q
 
-   
 
 
 
-/* 5. Calc default values 
+/* 5. Calculate the values for taxlot label fc
 
-ARCEDIT 
-EC TAXLOT
-EF LABEL
-SEL ALL
-CHANGE TAXLOT C/ //G                           /* LEFT JUSTIFY TAXLOT NUMBERS 
-SAVE
-Q
+arcedit 
+ec taxlot
+ef label
+
+sel all
+change TAXLOT C/ //G                           /* LEFT JUSTIFY TAXLOT NUMBERS 
+
+save
+q
 
 
 &DATA ARC INFO
@@ -195,7 +232,7 @@ MOVE '---' TO MAPSUFTYPE
 MOVE '000' TO MAPSUFNUM
 MOVE '--' TO ANOMALY
 /* CALC MAPACRES = AREA / 43560    /* Sometimes fails with overflow error
-CALC MAPACRES = 0                  /* WE NEED TO FIX THIS EVENTUALLY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+CALC MAPACRES = 0                  /* FIXME: WE NEED TO FIX THIS EVENTUALLY!!!!!!!!!!!!!!!!!!!!!!!!!!!
 CALC TAXLOTACRE = LEGACRES1 
 
 ALTER QTR                                         /* PLAY WITH QUARTER QUARTER SECITON NUMBERS
@@ -226,19 +263,16 @@ Q STOP
 
 
 
-ARCEDIT
-EC TAXLOT 
-EF LABEL 
-SEL ALL
-CHANGE ORMAPNUM C/ /0/G 
-CHANGE ORTAXLOT C/ /0/G 
-SAVE
-Q 
+arcedit
+ec taxlot 
+ef label 
+sel all
+change ORMAPNUM C/ /0/G 
+change ORTAXLOT C/ /0/G 
+save
+q 
 
-/* DROP OLD ITEMS 
-
-
-DROPITEM TAXLOT.PAT TAXLOT.PAT 
+dropitem taxlot.pat taxlot.pat 
 R
 MAPNUM
 SECTION
@@ -255,7 +289,7 @@ CQTRQTR
 Y
 Y
 
-DROPITEM TAXLOT.AAT TAXLOT.AAT 
+dropitem taxlot.aat taxlot.aat 
 TAXMAPTYPE
 AUTO-WHO
 AUTO-METHOD
@@ -266,20 +300,24 @@ ANGLE
 Y
 Y
 
+/* Copy the points for taxlot labels to taxlotpt
 
-/* create taxlotpt coverage for labels 
+arcedit 
 
-ARCEDIT 
 ec taxlot
 ef label 
 sel all
 put taxlotpt 
-SAVE
-QUIT 
 
-build taxlotpt point 
+/* save   We're not changing anything in taxlot here so no save
+quit 
 
+/* I don't know why the arcedit step did not already do this... 
+/* Yes actually I just checked and it appears there are already attributes
+/* so I commented this out, pretty sure it does nothing at all.
+/*
+/* build taxlotpt point 
 
-&if [exists oldtaxlot -cover] &then kill oldtaxlot all
+kill taxlotbk all
 
-&RETURN 
+&RETURN

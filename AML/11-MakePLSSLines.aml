@@ -1,18 +1,25 @@
 /************************************************
-/* Creates coverages of corresponding feature classes plss lines 
+/* Creates coverages of corresponding feature classes plss lines
+/* Args:
+/*   None
 /* Input:
-/*   taxbound
-/*   taxmap
+/*   taxmap    lines are copied from here
+/*   taxbound  used for mapnumber
 /* Output:
-/*   plssline, annotation and lines
+/*   plssline, annotation,lines; will be deleted and recreated
 
 &ECHO &ON 
 &WATCH 11-MakePLSSLines.wat
 
-&if [exists PLSSline -cover] &then kill PLSSline all 
-&if [exists PLSSline1 -cover] &then kill PLSSline1 all 
+&do name &list plssline, plssline1
+  &if [exists %name% -cover] &then kill %name% all
+&end
 
 /* 1. Select just plss lines  from taxmap  ************************
+
+/*  2  plss section line
+/*  7  control reference line
+/* 47  dlc line
 
 reselect taxmap PLSSLine1 line 
 res taxmaptype = 7 OR taxmaptype = 2 or taxmaptype = 47 
@@ -85,5 +92,7 @@ ORMAPNUM
 [UNQUOTE ' '] 
 Y
 Y
+
+&if [exists plssline1 -cover] &then kill plssline1 all 
 
 &RETURN 

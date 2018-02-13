@@ -1,75 +1,83 @@
-/* 
+/*
 /*  Dean 10/24/05
 
+/* Args:  source      workspace containing read-only coverages
+/*
 /* Input:
-/*   taxmap coverage from the source workspace
+/*   taxmap      coverage from the %source%
+/*
 /* Output:
-/*   taxmap    basically a copy of the source taxmap coverage
-/*   taxbound  map and detail map polygons extracted from taxmap
-/*   mapindex  taxmap with a bunch of fields dropped and MAPSCALE added and filled in
+/*   tmptaxmap1  copy of the source taxmap coverage, which we create here
+/*   taxbound    map and detail map polygons copied from taxmap
+/*   mapindex    taxmap with a bunch of fields dropped and MAPSCALE added and filled in
 
 /********************************************************************************
 &args source
+/* typically run as:  &r 01-makemapindex.aml %PROJECTHOME%/Source/t4-6
+
 &WATCH 01-MakeMapIndex.wat
-&ECHO &ON 
+&ECHO &ON
 &term 9999 
 DISPLAY 9999 1
 
 /***************************************************************************
-/* 1. delete coverages you will create and check if inputs are present 
+/* 1. delete coverages that will be created
 
-&if [exists taxtemp -cover] &then kill taxtemp all
-&if [exists taxbound -cover] &then kill taxbound all
-&if [exists mapindex -cover] &then kill mapindex all 
-&if [exists taxmap -cover] &then kill taxmap all
+&do name &list tmptaxmap1, taxbound, mapindex
+  &if [exists %name% -cover] &then kill %name% all
+&end
 
-copy %source%\taxmap taxmap 
+copy %source%\taxmap tmptaxmap1
 
-&S X = [DELETE TAXMAP.ACODE -INFO] 
-&S X = [DELETE TAXMAP.TATATIGDS -INFO] 
+/* I take it we don't want whatever these things are...??
 
-/* 1.5 - add taxmap annotation attributes so you do not have to do it later 
+&s X = [delete tmptaxmap1.acode -info]
+&s x = [delete tmptaxmap1.tatatigds -info]
 
-addtext taxmap igds 
-additem taxmap.tatigds taxmap.tatigds maplevel 3 3 i 
-additem taxmap.tatigds taxmap.tatigds mapsize 8 8 n 2 
-additem taxmap.tatigds taxmap.tatigds mapscale 5 5 i
-additem taxmap.tatigds taxmap.tatigds mapnumber 20 20 c 
+/* 1.5 - add tmptaxmap annotation attributes
 
+addtext tmptaxmap1 igds 
+additem tmptaxmap1.tatigds tmptaxmap1.tatigds maplevel 3 3 i 
+additem tmptaxmap1.tatigds tmptaxmap1.tatigds mapsize 8 8 n 2 
+additem tmptaxmap1.tatigds tmptaxmap1.tatigds mapscale 5 5 i
+additem tmptaxmap1.tatigds tmptaxmap1.tatigds mapnumber 20 20 c 
 
-/* 2. make taxbound and taxdetail polygons => taxbound coverage
+/* Set coordinate precision
 
 PRECISION DOUBLE DOUBLE 
 
-arcedit 
+/* 2. Copy map (51) and detail map (52) polygons to taxbound coverage
 
-EC TAXMAP 
+arcedit 
+ec tmptaxmap1
+
 ef arc
 sel taxmaptype = 51 or taxmaptype = 52
 put taxbound
+
 ef label
 sel taxmaptype = 51 or taxmaptype = 52
 put taxbound
 
-save 
+/* save  --- should not need to modify tmptaxmap1
 q 
 
 clean taxbound # 10 .1
 
-/* 3. Add fields 
+/* 3. Add fields to POINT attributes (.PAT)
 
-ADDITEM TAXBOUND.PAT TAXBOUND.PAT  MAPSCALE 5 5 I 
-ADDITEM TAXBOUND.PAT TAXBOUND.PAT  MAPNUMBER 20 20 C 
-ADDITEM TAXBOUND.PAT TAXBOUND.PAT  PAGENUMBER 3 3 I
-ADDITEM TAXBOUND.PAT TAXBOUND.PAT  ORMAPNUM 24 24 C 
-ADDITEM TAXBOUND.PAT TAXBOUND.PAT  MAPSUFTYPE 1 1 C 
-ADDITEM TAXBOUND.PAT TAXBOUND.PAT  MAPSUFNUM 4 4 I 
+additem TAXBOUND.PAT TAXBOUND.PAT  MAPSCALE 5 5 I 
+additem TAXBOUND.PAT TAXBOUND.PAT  MAPNUMBER 20 20 C 
+additem TAXBOUND.PAT TAXBOUND.PAT  PAGENUMBER 3 3 I
+additem TAXBOUND.PAT TAXBOUND.PAT  ORMAPNUM 24 24 C 
+additem TAXBOUND.PAT TAXBOUND.PAT  MAPSUFTYPE 1 1 C 
+additem TAXBOUND.PAT TAXBOUND.PAT  MAPSUFNUM 4 4 I 
 
-ADDITEM TAXBOUND.PAT TAXBOUND.PAT  RELIACODE 2 2 I 
-ADDITEM TAXBOUND.PAT TAXBOUND.PAT  AUTODATE 8 10 D  
-ADDITEM TAXBOUND.PAT TAXBOUND.PAT  AUTOMETHOD 3 3 C  
-ADDITEM TAXBOUND.PAT TAXBOUND.PAT  AUTOWHO 30 30 C 
-ADDITEM TAXBOUND.PAT TAXBOUND.PAT  CITYNAME 50 50 C 
+additem TAXBOUND.PAT TAXBOUND.PAT  RELIACODE 2 2 I 
+additem TAXBOUND.PAT TAXBOUND.PAT  AUTODATE 8 10 D  
+additem TAXBOUND.PAT TAXBOUND.PAT  AUTOMETHOD 3 3 C  
+additem TAXBOUND.PAT TAXBOUND.PAT  AUTOWHO 30 30 C 
+additem TAXBOUND.PAT TAXBOUND.PAT  CITYNAME 50 50 C 
 
 &DATA ARC INFO
 ARC
@@ -81,7 +89,7 @@ RED
 Q STOP
 &END 
 
-/* 4. CALCULATE MAP NUMBER INFORMATION
+/* 4. calculate map number information
 /* Used to be called "3. CALCULATE SCALE FOR TAXDETAIL"
 /* which seems more accurate to me.
 
@@ -173,7 +181,7 @@ CHANGE ORMAPNUM C/ /0/G
 SAVE 
 Q  
 
-/* 8. Drop un-needed numbers 
+/* 8. Drop un-needed point attributes
 
 COPY TAXBOUND MAPINDEX 
 DROPITEM MAPINDEX.PAT MAPINDEX.PAT 
@@ -208,12 +216,11 @@ MQQ
 Y
 Y
 
-/* .aat is the attribute data
-/* This adds a new field to the line fc (arc)
-/* called "CURRENT" and sets it to "Y"
+/* Remove all the attributes from mapindex lines,
+/* then add a field called "CURRENT" and set it to "Y"
 
 &s x = [delete mapindex.aat -info] 
-build mapindex line 
+build mapindex line
 additem mapindex.aat mapindex.aat current 1 1 c 
 
 &data arc info
@@ -224,11 +231,4 @@ MOVE 'Y' TO CURRENT
 Q STOP
 &END 
 
-&if [exists taxtemp -cover] &then kill taxtemp all
-
 &RETURN
-
-
-
- 
-

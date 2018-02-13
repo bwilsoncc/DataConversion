@@ -1,8 +1,12 @@
 /************************************************
-/* Creates coverages of corresponding feature classes RefLines lines 
+/* Creates coverages of corresponding feature classes RefLines lines
+/*
+/* Args: NONE
+/*
 /* Input:
 /*   taxbound
 /*   taxmap
+/* 
 /* Output:
 /*   refline
 
@@ -28,6 +32,8 @@ n
 n
 
 /* 2. Intersect with taxbound to get map number  ************************
+
+/* This throws a bunch of "item duplicated" warning messages that seem harmless.
 intersect reflin1 taxbound refline  line
 
 /* 3. add needed items ************************ 

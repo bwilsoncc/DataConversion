@@ -1,32 +1,50 @@
-/* Finishes annotation - drops fields not needed.
 /*  Dean 9/24/05
+
 /********************************************************************************
+/* This script is now IDEMPOTENT, inputs are not changed or deleted.
+/*
+/* Args: NONE
+/*
 /* Input: Some of these are checked for existence
 /*   taxcode
 /*   taxlot
-/*   taxcodan*		from 04-convert.aml
-/*   taxlotan*		from 04-convert.aml
-/*   taxmap*
-/*
-/*   *must exist
+/*   tmptaxcodan	from 04-convert.aml
+/*   tmptaxlotan	from 04-convert.aml
+/*   tmptaxmap3          
+/*   template files: taxcodanno taxlotanno taxmapanno
 /*
 /* Output:
-/*   Inputs are updated
-/* If they exist, drops temp files taxlotanbk, taxcodeanbk, taxmapbk, taxmapbktc
+/*   taxmap             copied from tmptaxmap3 and unused fields are dropped
+/*   taxcodan		copied from tmptaxcodan
+/*   taxlotan		copied from tmptaxlotan
+/*
+/* If they exist, drops temp files taxlotanbk, taxcodeanbk, taxmapbk
 
-&s x = [delete 15-FinishAnno.wat -file] 
 &WATCH 15-FinishAnno.wat
 &ECHO &ON 
-&term 9999 
-DISPLAY 100
+&term 9999
+
+/* This throws an ERROR in arcedit, even though everything APPARENTLY runs
+/* DISPLAY 100
+/* This does NOT, so it wins because I have no way of knowing what's failing
+DISPLAY 9999 1
+
+/* Check for required input files.
+
+&do name &list tmptaxmap3, tmptaxlotan, tmptaxcodan
+  &if ^ [exists %name% -cover] &then &do 
+    &type Required %name% is missing.
+    &return ; &return 
+  &end 
+&end 
 
 /***************************************************************************
-/* 1. drop fields from taxmapanno 
+/* 1. Drop unwanted fields and write output to target file.
 
-dropitem taxmap.tatigds taxmap.tatigds 
+dropitem tmptaxmap3.tatigds taxmap.tatigds 
 X
 Y
-MAPNUM
+/*MAPNUM (does not exist)
 OFFSETX
 OFFSETY
 HEIGHT
@@ -40,34 +58,32 @@ MAPLEVEL
 Y
 Y
 
-/*2. DROPITEMS FROM TAXCODE ANNOTATION 
-
-DROPITEM TAXCODAN.TATIGDS TAXCODAN.TATIGDS 
+dropitem tmptaxcodan.tatigds taxcodan.tatigds 
 X
 Y
 OFFSETX
 OFFSETY
 HEIGHT
 MAPLEVEL
-MAPNUM
+/* MAPNUM
 AUTO-METHOD
 AUTO-REL
 AUTO-WHO
 AUTO-DATE
 GEOTRANSNO
-OVERLAP
+/* OVERLAP
 TAXCODE
-TXC
+/* TXC
 [UNQUOTE ' '] 
 Y
 Y
 
-/* 3. DROPITEMS FROM TAXLOT ANNO 
+/* 3. DROPITEMS FROM TAXLOT ANNO   and create taxcodan
 
-DROPITEM TAXLOTAN.TATIGDS TAXLOTAN.TATIGDS 
+dropitem tmptaxlotan.tatigds taxlotan.tatigds 
 X
 Y
-MAPNUM
+/* MAPNUM
 OFFSETX
 OFFSETY
 HEIGHT
@@ -77,17 +93,16 @@ AUTO-WHO
 AUTO-DATE
 GEOTRANSNO
 MAPLEVEL
-TAXLOT
-OVERLAP
-TXT5
+/* TAXLOT
+/* OVERLAP
+/* TXT5
 [UNQUOTE ' '] 
 Y
 Y
 
+/* Not creating this file currently...
 
-/* 4 DROPITEMS FROM ACRES 
-
-/* DROPITEM TAXACAN.TATIGDS TAXACAN.TATIGDS 
+/* dropitem tmptaxacan.tatigds taxacan.tatigds 
 /* X
 /* Y
 /* MAPNUM
@@ -107,10 +122,9 @@ Y
 /* Y
 /* Y
 
-/* 5. DROP FINAL CORNERS 
-
+/* DROP FINAL CORNERS 
 /* DELETE LEVELS THAT DO NOT EXIST - THIS IS OLD GUNK WE DO NOT MAP OR USE 
-
+/*
 /* ARCEDIT
 /* EC TAXMAP
 /* EF ANNO.IGDS
@@ -121,61 +135,76 @@ Y
 /* SAVE
 /* Q
 
+/* 6.  Add template coverage so annotation gets the correct symbols and levels for each layer
 
-/* 6.  Added template coverage so annotation gets the correct symbols and levels for each layer
-&if [exists taxmapanbk -cover] &then kill taxmapanbk all 
-&if [exists taxlotanbk -cover] &then kill taxlotanbk all 
-&if [exists taxcodeanbk -cover] &then kill taxcodeanbk all 
+&set templates = %PROJECTHOME%\AnnoTemplateCoverages
 
-/* Anno created in 04-convertanno.aml is edited
+&do name &list taxcodanno, taxlotanno, taxmapanno
+  &if [exists %name% -cover] &then kill %name%
+  copy %templates%\%name% %name%
+&end
 
-/* Select all annotation from taxmap coverage and copy it to taxmapanbk
+/* PLEASE REFACTOR ME!
+
+&if [exists taxmapanbk -cover] &then kill taxmapanbk all
 arcedit
 ec taxmap 
 ef anno.igds
-sel all 
-put taxmapanbk igds
-sel all
-delete
-save
-get taxmapanno 
-get taxmapanbk 
-save
-q
 
+sel all 
+put taxmapanbk igds	/* Save the annotation to a temp file
+
+sel all
+delete			/* Remove existing data
+save
+
+get taxmapanno		/* TEMPLATE
+get taxmapanbk  	/* put data back
+save
+
+q
+kill taxmapanbk 
+
+
+&if [exists taxlotanbk -cover] &then kill taxlotanbk all 
 arcedit
 ec taxlotan 
 ef anno.igds
+
 sel all 
 put taxlotanbk igds
 sel all
 delete
 save
-get taxlotanno 
+
+get taxlotanno  /* TEMPLATE
 get taxlotanbk 
 save
-q
 
+q
+kill taxlotanbk 
+
+
+&if [exists taxcodeanbk -cover] &then kill taxcodeanbk all
 arcedit
 ec taxcodan 
 ef anno.igds
+
 sel all 
 put taxcodeanbk igds
 sel all
 delete
 save
-get taxcodeanno 
-get taxcodeanbk 
-save
-q
 
-/* I don't really care if the TEMP files are deleted or not
-/* because the whole directory tree will be deleted upon project completion
-/* and leaving them around makes debugging easier
-/* but if they are left around it's a clue the process did not complete! 
-&IF [EXISTS TAXLOTANBK -COVER] &THEN KILL TAXLOTANBK 
-&IF [EXISTS TAXCODEANBK -COVER] &THEN KILL TAXCODEANBK
-&IF [EXISTS TAXMAPBK -COVER] &THEN KILL TAXMAPBK 
-&IF [EXISTS TAXMAPBKTC -COVER] &THEN KILL TAXMAPBKTC 
+get taxcodanno   /* TEMPLATE
+get taxcodeanbk  /* data
+save
+
+q
+kill taxcodeanbk
+
+kill taxcodanno
+kill taxlotanno
+kill taxmapanno
 
 &return

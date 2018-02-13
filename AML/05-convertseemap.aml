@@ -1,28 +1,43 @@
 /* Format attributes so that they can be seen in ArcGIS
 /* including $size and some kind of maplevel thing
 /*
+/* Args: NONE
+/*
 /* Input:
-/*   taxseemap annotation.igds
-/*   taxmap annotation.igds
+/*   tmptaxseemap annotation.igds
+/*   tmptaxmap2   annotation.igds
 /*
 /* Output:
-/*   taxseemap annotation.igds   misc attributes get updated
-/*   taxmap annotation.igds      taxseemap entries get added
+/*   taxseemap    annotation.igds      (final)
+/*   tmptaxmap3   annotation.igds      taxseemap entries get added
 /* 
-&WATCH  05-convertseemap.wat
+&WATCH 05-convertseemap.wat
 &ECHO &ON
-display 9999 1
 
-/* 1. Save annotation information in fields 
+copy tmptaxseemap taxseemap
+
+/* 1. Save annotation information in fields
+/* I am pretty sure this entire step is redundant now.
 
 arcedit
-ec taxmap
-ef anno.seemap
+display 9999 1
+
+/* At this point in Polk county version, annotation is in taxmap/annotation.seemap.
+/* Clatsop is still using a separate coverage.
+ec taxseemap
+ef anno.igds
 sel all
+/* This line was removed in the 2/18 (Polk) code so I think this entire edit might do nothing now
+calc mapsize = $size
+
 save
 q 
 
 /* 2. Create taxmap number xref 
+
+/* 2/13/18
+/* "maplevel" field has been superceded, it's just left over from earlier versions
+/* Doesnt hurt anything but you probably could remove it if you are feeling daring
 
 &DATA ARC INFO
 ARC
@@ -61,15 +76,17 @@ ALTER LEVEL
 Q STOP
 &END 
 
-ARCEDIT
-  EC MAPLEVEL INFO
-  SEL ALL
-  CHANGE LEVEL C/A/1/G 
-  CHANGE LEVEL C/B/2/G 
-  CHANGE LEVEL C/C/3/G
-  CHANGE LEVEL C/D/4/G
-  SAVE
-Q
+/* Change a reference to A|B|C|D to 1|2|3|4 in the LEVEL field.
+arcedit
+ec maplevel info
+sel all
+/* STRING manipulation, C/OLDPATTERN/NEWPATTERN/GLOBAL
+change LEVEL C/A/1/G 
+change LEVEL C/B/2/G 
+change LEVEL C/C/3/G
+change LEVEL C/D/4/G
+save
+q
 
 &DATA ARC INFO
 ARC
@@ -100,24 +117,28 @@ CALC MAPSCALE = 100
 Q STOP
 &END 
 
-/* 6. CALC FEATURE TYPES TO STANDARD AND RELOAD BACK TO TAXANNO
+/* 6. Calc feature types to standard and reload back to taxmap anno
 
-ARCEDIT
-  /* Calc attributes in taxseemap to the right values
-  EC TAXSEEMAP 
-  EF ANNO.IGDS
-  SEL ALL
-  CALC $LEVEL = 62 
-  CALC $SIZE = 0 
-  CALC $SYMBOL = 62 
-  CALC LEVEL = 62
-  save
+arcedit
 
-/* What is THIS going to do to taxmap anno??
-  ec TAXMAP
-  EF ANNO.IGDS
-  GET TAXSEEMAP
-  SAVE 
-Q
+/* Calc attributes in taxseemap to the right values
+ec taxseemap 
+ef anno.igds
+sel all
 
-&RETURN
+/* 62 is "See maps" 
+calc $LEVEL = 62 
+calc $SIZE = 0 
+calc $SYMBOL = 62 
+calc LEVEL = 62
+save
+
+/* Now put it back in taxmap anno
+ec tmptaxmap3
+ef anno.igds
+get taxseemap
+save 
+
+q
+
+&return

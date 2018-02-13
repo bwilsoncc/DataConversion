@@ -1,40 +1,50 @@
-/* Does a lot of indecipherable steps...
+/* This script is IDEMPOTENT,
+/* it does not change tmptaxmap1 but it creates taxcode
+/*
+/* Args:   NONE
 /*
 /* Input:
-/*   taxmap
+/*   tmptaxmap1
+/*
 /* Output:
 /*   taxcode
-&args source
 
 &WATCH 02-Maketaxcode.wat
 &ECHO &ON 
 &term 9999 
 
-
 /***************************************************************************
-/* 1. delete coverages you will create and check if inputs are present 
+/* 1. delete coverages
 
-&if [exists taxcode -cover] &then kill taxcode all
-&if [exists taxcode1 -cover] &then kill taxcode1 all
-
-&if ^ [exists taxmap -cover] &then &do 
- &type No taxmap ; did you run 01-makemapindex.aml??
+&if ^ [exists tmptaxmap1 -cover] &then &do 
+ &type No tmptaxmap1, did you run 01-makemapindex.aml??
   &return ; &return 
 &end 
 
+&do name &list taxcode, taxcode1
+  &if [exists %name% -cover] &then kill %name% all
+&end
+
 /* 2. Create taxcodes just the way mapcheck does 
 
-PRECISION DOUBLE DOUBLE 
+PRECISION DOUBLE DOUBLE
+
+/* 51 map
+/* 53 ??
+/* 54 taxcode
 
 arcedit
-ec taxmap 
+ec tmptaxmap1
+
 ef arc
 sel taxmaptype = 51 or taxmaptype = 53
 put taxcode1
+
 ef label
 sel taxmaptype = 54
 put taxcode1
-save
+
+/* save     should not have to do a save here, we don't want to change tmptaxmap1
 q
 
 clean taxcode1 # 10 .05
@@ -48,7 +58,7 @@ Q STOP
 &END 
 IDEDIT TAXCODE 
 
-/* 3. add items 
+/* 3. add items to point attributes
 
 additem taxcode.pat taxcode.pat county 3 3 i 
 additem taxcode.pat taxcode.pat otaxcode 8 8 c 
@@ -60,7 +70,7 @@ additem taxcode.pat taxcode.pat AutoMethod 3 3 c
 additem taxcode.pat taxcode.pat AutoWho 30 30 c 
 additem taxcode.pat taxcode.pat TAXCODEID 8 8 I
 
-/* 4. calc Items 
+/* 4. calc items 
 
 &data arc info 
 arc
@@ -87,14 +97,14 @@ Q STOP
 
 /* 5. Drop un-needed items 
 
-DROPITEM TAXCODE.PAT TAXCODE.PAT CTAXCODE 
-DROPITEM TAXCODE.PAT TAXCODE.PAT TAXMAPTYPE 
+dropitem taxcode.pat taxcode.pat CTAXCODE 
+dropitem taxcode.pat taxcode.pat TAXMAPTYPE 
 
 /* 6. MAKE TAXCODE LINES 
 
-BUILD TAXCODE LINE 
+build taxcode line 
 
-ADDITEM TAXCODE.AAT TAXCODE.AAT CURRENTLINE 1 1 C 
+additem taxcode.aat taxcode.aat CURRENTLINE 1 1 C 
 
 &DATA ARC INFO 
 ARC
@@ -104,8 +114,6 @@ Q STOP
 &END 
 
 
-&if [exists taxcode1 -cover] &then kill taxcode1 all
+kill taxcode1 all
 
 &return
-
-
