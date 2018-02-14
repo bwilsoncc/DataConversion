@@ -18,7 +18,6 @@
 /*    tmptaxlotan
 
 &WATCH 04-convertanno.wat &COMMANDS
-&ECHO &ON
 
 &do name &list taxbound, tmptaxmap1
   &if ^ [exists %name% -cover] &then &do 
@@ -263,7 +262,13 @@ addtext tmptaxmap2 igds
 /* Create taxlot and taxcode anno - Dean Nov 2017 to remove linked anno 
 /* Update so have anno levels for each scale for both 
 
-/* Make intermediate Taxlot Anno 
+/* Make intermediate Taxlot Anno
+
+/* Interesting that we keep going back to the taxmap coverage
+/* since at this point we already have created the final taxlot coverage in the previous step
+/* Seems like we could put the annotation into the taxlot coverage at the same time
+/* but just sayin'
+/* Dont really care... 1000 ways to do this task
 
 reselect tmptaxmap2 tmptaxlotan anno.igds      
 RES level = 37 and ( text cn 'L' or text nc 'C' or text nc 'A' or text nc 'M' or text nc 'U' )
@@ -292,9 +297,9 @@ sel $level = 54
 delete 
 
 save
-Q
+q
 
-/* edit taxcode and taxlot anno and assign new levels based on scale - Dean Jan 2018 
+/* Edit taxcode and taxlot anno and assign new levels based on scale - Dean Jan 2018 
 
 arcedit 
 ec tmptaxlotan

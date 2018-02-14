@@ -1,14 +1,14 @@
 /************************************************
 /* Creates coverages of corresponding feature classes plss lines
-/* Args:
-/*   None
+/* Args: None
+/* 
 /* Input:
-/*   taxmap    lines are copied from here
-/*   taxbound  used for mapnumber
+/*   tmptaxmap3  lines are copied from here
+/*   taxbound    used for mapnumber
+/* 
 /* Output:
 /*   plssline, annotation,lines; will be deleted and recreated
-
-&ECHO &ON 
+/*   The coverage will have annotation.igds but we don't use it so don't worry about the extra anno in there.
 &WATCH 11-MakePLSSLines.wat
 
 &do name &list plssline, plssline1
@@ -21,7 +21,7 @@
 /*  7  control reference line
 /* 47  dlc line
 
-reselect taxmap PLSSLine1 line 
+reselect tmptaxmap3 plssline1 line 
 res taxmaptype = 7 OR taxmaptype = 2 or taxmaptype = 47 
 [unquote ' '] 
 n
@@ -29,7 +29,7 @@ n
 
 /* 2. Intersect with taxbound to get map number  ************************
 
-intersect PLSSLine1 mapindex PLSSLine line 
+intersect plssline1 mapindex plssline line 
 
 /* 3. add needed items ************************ 
 

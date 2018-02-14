@@ -1,12 +1,13 @@
 /************************************************
-/* Creates coverages of corresponding feature classes 
+/* Creates coverages of corresponding feature classes
+/*
 /* Input:
-/*   taxmap
 /*   taxbound
+/*   tmptaxmap3
+/*
 /* Output:
 /*   cartolin annotation
 /*
-&ECHO &ON 
 &WATCH 09-MakeCARTOLINES.wat
 
 &if [exists cartolin -cover] &then kill cartolin all
@@ -21,7 +22,7 @@
 
 /* 1. Select just cartolines from taxmap  ************************
 
-reselect taxmap cartlin1 line 
+reselect tmptaxmap3 cartlin1 line 
 res taxmaptype > 100 OR taxmaptype = 34 
 [unquote ' '] 
 n
@@ -126,7 +127,7 @@ MQQ
 Y
 Y
 
-&if [exists cartlin1 -cover] &then kill cartlin1 all 
+kill cartlin1 all 
 
 &RETURN 
 /********************************************************************

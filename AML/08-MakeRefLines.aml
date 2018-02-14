@@ -5,13 +5,12 @@
 /*
 /* Input:
 /*   taxbound
-/*   taxmap
+/*   tmptaxmap3
 /* 
 /* Output:
 /*   refline
 
 &WATCH 08-MakeRefLines.wat
-&ECHO &ON 
 
 &if [exists Reflin1 -cover] &then kill Reflin1 all 
 &if [exists Refline -cover] &then kill Refline all 
@@ -23,9 +22,9 @@
   &return ; &return 
 &end 
 
-/* 1. Select just ref lines  from taxmap  ************************
+/* 1. Select just ref lines  from tmptaxmap3  ************************
 
-reselect taxmap RefLin1 line 
+reselect tmptaxmap3 RefLin1 line 
 res taxmaptype = 33 OR taxmaptype = 9 or taxmaptype = 40 OR TAXMAPTYPE = 15 OR TAXMAPTYPE = 17 or taxmaptype = 18 
 [unquote ' '] 
 n

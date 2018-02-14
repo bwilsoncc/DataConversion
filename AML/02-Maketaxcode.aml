@@ -10,8 +10,6 @@
 /*   taxcode
 
 &WATCH 02-Maketaxcode.wat
-&ECHO &ON 
-&term 9999 
 
 /***************************************************************************
 /* 1. delete coverages

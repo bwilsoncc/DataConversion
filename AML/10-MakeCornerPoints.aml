@@ -3,13 +3,14 @@
 /* 
 /* Input:
 /*   taxbound
-/*   DLCMASTER from AnnoGenCov COMMENTED OUT FOR NOW was just copied into the local space
+/*   tmptaxmap3
+/*   DLCMASTER from AnnoGenCov
 /*   xxxyyy.lut from K:   I have no idea what this is for, I asked Dean but I don't remember the answer :-)
-/* Output:
-/*   corner annotation and points
-/*   xxxyyy.lut gets copied into our workspace
 /*
-&ECHO &ON 
+/* Output:
+/*   corner       annotation and points
+/*   xxxyyy.lut   gets copied into our workspace
+/*
 &WATCH 10-MakeCornerPoints.wat
 
 &if [exists cornpt1 -cover] &then kill cornpt1 all 
@@ -47,7 +48,7 @@ COPYINFO K:\taxmaped\apps\biged2\lookupclatsop\INFO!ARC!XXXYYY.LUT
 /*47-DLC
 /*48-MEANDERCO
 
-reselect taxmap cornpt1 point 
+reselect tmptaxmap3 cornpt1 point 
 res taxmaptype = 20 OR taxmaptype = 44 or taxmaptype = 45 OR TAXMAPTYPE = 47 ~
 OR TAXMAPTYPE = 48 
 [unquote ' '] 
@@ -179,14 +180,7 @@ MQQ
 Y
 Y
 
-&if [exists cornpt1 -cover] &then kill cornpt1 all 
+kill cornpt1 all 
 
 &RETURN 
 /********************************************************************
-
-
-
-
-
-
-

@@ -4,12 +4,13 @@
 /* steps 08, 09, 10, 11, 12 could probably all be refactored into one step
 /* 
 /* Input:
-/*   taxbound  lines are copied from here
+/*   tmptaxmap3  lines are copied from here
+/*   taxbound    lines are copied from here
 /* 
 /* Output:
-/*   waterlin annotation and lines; will be deleted and recreated
+/*   waterlin    will be deleted and recreated
+/*   The coverage will have annotation.igds but we don't use it so don't worry about the extra anno in there.
 
-&ECHO &ON 
 &WATCH 12-MakeWaterLines.wat
 
 &if ^ [exists taxbound -cover] &then &do 
@@ -25,8 +26,7 @@
 
 /* 1. Select just waterlines from taxmap  ************************
 
-
-reselect taxmap waterln1 line 
+reselect tmptaxmap3 waterln1 line 
 res taxmaptype = 22 OR taxmaptype = 24 or taxmaptype = 26 or taxmaptype = 28 
 [unquote ' '] 
 n

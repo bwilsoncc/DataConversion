@@ -16,8 +16,6 @@
 /* typically run as:  &r 01-makemapindex.aml %PROJECTHOME%/Source/t4-6
 
 &WATCH 01-MakeMapIndex.wat
-&ECHO &ON
-&term 9999 
 DISPLAY 9999 1
 
 /***************************************************************************

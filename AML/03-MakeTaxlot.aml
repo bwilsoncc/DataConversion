@@ -22,8 +22,6 @@
 /* For example, &r 03-maketaxlot.aml %PROJECTHOME%/Source/t4-6
 
 &WATCH 03-MakeTaxlot.wat
-&ECHO &ON 
-&term 9999 
 
 /***************************************************************************
 /* 1. delete coverages you will create and check if inputs are present 
@@ -33,12 +31,9 @@
   &return ; &return 
 &end 
 
-&do name &list taxlot, taxlotpt, taxlotbk
+&do name &list taxlot, taxlotpt
   &if [exists %name% -cover] &then kill %name% all
 &end
-
-/* This gets deleted when we finish
-copy %source%/taxlot taxlotbk 
 
 /* 2. Create taxlot coverage 
 
@@ -139,12 +134,11 @@ Y
 /* I get a warning about the arc attributes not matching,
 /* but it's specious because we are going to populate the attributes down below...
 
-
 /* ************************************************************************
-/* Copy the "label" point fc from "taxlotbk"
+/* Copy the "label" point fc
 /* Since there is no label fc in "taxlot" the warning about attributes not matching is specious.
 
-ec taxlotbk                 /* Used to read SOURCE directly here, not sure why it matters
+ec %source%/taxlot
 ef label  
 
 sel taxmaptype = 31          /* BRINGING TAXLOT LABELS FROM TAXLOT COVER
@@ -153,11 +147,9 @@ put taxlot                   /* TO ENSURE WE GET MAP NUMBER & TAXLOT KEY INFO RI
 /* The coverage exists, but there is no label fc until this runs
 Y
 
-/* save    DONT save here we don't want to modify the input file tmptaxmap1
 q
 
 clean taxlot # 10 .05
-
 
 /* Recreate taxlot key - IN THE POLK KEY THE TAXLOT IS RIGHT JUSTIFIED... 
 
@@ -317,7 +309,5 @@ quit
 /* so I commented this out, pretty sure it does nothing at all.
 /*
 /* build taxlotpt point 
-
-kill taxlotbk all
 
 &RETURN

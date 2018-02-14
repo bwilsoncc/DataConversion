@@ -4,17 +4,21 @@
 /* Args: NONE
 /*
 /* Input:
-/*   tmptaxseemap annotation.igds
-/*   tmptaxmap2   annotation.igds
+/*   tmpseemap   annotation.igds
+/*   tmptaxmap2  annotation.igds
 /*
 /* Output:
-/*   taxseemap    annotation.igds      (final)
-/*   tmptaxmap3   annotation.igds      taxseemap entries get added
+/*   taxseemap   annotation.igds      (final)
+/*   tmptaxmap3  annotation.igds      taxseemap entries get added
 /* 
 &WATCH 05-convertseemap.wat
-&ECHO &ON
 
-copy tmptaxseemap taxseemap
+&do name &list tmptaxmap3, taxseemap
+  &if [exists %name% -cover] &then kill %name% all
+&end
+
+copy tmptaxmap2 tmptaxmap3
+copy tmpseemap taxseemap
 
 /* 1. Save annotation information in fields
 /* I am pretty sure this entire step is redundant now.
@@ -136,7 +140,10 @@ save
 /* Now put it back in taxmap anno
 ec tmptaxmap3
 ef anno.igds
+
 get taxseemap
+/* I am getting the warning about attributes "only matching items copied" here...
+
 save 
 
 q

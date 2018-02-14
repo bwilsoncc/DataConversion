@@ -2,6 +2,7 @@
 
 /********************************************************************************
 /* This script is now IDEMPOTENT, inputs are not changed or deleted.
+/* Outputs are recreated on each run.
 /*
 /* Args: NONE
 /*
@@ -21,13 +22,6 @@
 /* If they exist, drops temp files taxlotanbk, taxcodeanbk, taxmapbk
 
 &WATCH 15-FinishAnno.wat
-&ECHO &ON 
-&term 9999
-
-/* This throws an ERROR in arcedit, even though everything APPARENTLY runs
-/* DISPLAY 100
-/* This does NOT, so it wins because I have no way of knowing what's failing
-DISPLAY 9999 1
 
 /* Check for required input files.
 
@@ -36,15 +30,27 @@ DISPLAY 9999 1
     &type Required %name% is missing.
     &return ; &return 
   &end 
-&end 
+&end
+
+&do name &list taxmap, taxcodan, taxlotan
+  &if [exists %name% -cover] &then kill %name% all
+&end
+
+/* Because I am copying entire coverages here I am probably copying lots of data I don't need,
+/* for example "arc" and "points" when I only want "annotation.igds". I don't know for sure, 
+/* but since this whole project is a temporary thing it will be thrown away in a day or two anyway
+/* so I don't care.
+
+copy tmptaxmap3  taxmap
+copy tmptaxlotan taxlotan
+copy tmptaxcodan taxcodan
 
 /***************************************************************************
 /* 1. Drop unwanted fields and write output to target file.
 
-dropitem tmptaxmap3.tatigds taxmap.tatigds 
+dropitem taxmap.tatigds taxmap.tatigds
 X
 Y
-/*MAPNUM (does not exist)
 OFFSETX
 OFFSETY
 HEIGHT
@@ -58,44 +64,48 @@ MAPLEVEL
 Y
 Y
 
-dropitem tmptaxcodan.tatigds taxcodan.tatigds 
+dropitem taxcodan.tatigds taxcodan.tatigds 
 X
 Y
 OFFSETX
 OFFSETY
 HEIGHT
-MAPLEVEL
-/* MAPNUM
+TOWN
+RANGE
+SECTION
+QTR
 AUTO-METHOD
 AUTO-REL
 AUTO-WHO
 AUTO-DATE
 GEOTRANSNO
-/* OVERLAP
-TAXCODE
-/* TXC
+MAPLEVEL
+STDSIZE
+TAXMAP-ID
 [UNQUOTE ' '] 
 Y
 Y
 
-/* 3. DROPITEMS FROM TAXLOT ANNO   and create taxcodan
+/* 3. DROPITEMS FROM TAXLOT ANNO
 
-dropitem tmptaxlotan.tatigds taxlotan.tatigds 
+dropitem taxlotan.tatigds taxlotan.tatigds 
 X
 Y
-/* MAPNUM
 OFFSETX
 OFFSETY
 HEIGHT
+TOWN
+RANGE
+SECTION
+QTR
 AUTO-METHOD
 AUTO-REL
 AUTO-WHO
 AUTO-DATE
 GEOTRANSNO
 MAPLEVEL
-/* TAXLOT
-/* OVERLAP
-/* TXT5
+STDSIZE
+TAXMAP-ID
 [UNQUOTE ' '] 
 Y
 Y
@@ -163,6 +173,7 @@ get taxmapanbk  	/* put data back
 save
 
 q
+kill taxmapanno
 kill taxmapanbk 
 
 
@@ -182,6 +193,7 @@ get taxlotanbk
 save
 
 q
+kill taxlotanno
 kill taxlotanbk 
 
 
@@ -201,10 +213,7 @@ get taxcodeanbk  /* data
 save
 
 q
-kill taxcodeanbk
-
 kill taxcodanno
-kill taxlotanno
-kill taxmapanno
+kill taxcodeanbk
 
 &return
