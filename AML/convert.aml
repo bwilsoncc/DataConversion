@@ -1,52 +1,20 @@
-&args wrkpath who
+&s source = %PROJECTHOME%/Source/t8-9
+&type Source is %source%
 
-&severity &error &routine badness  
 
-&term 9999
-&amlpath P:\taxmaped\apps\ConvertTwnToGeo\AML
+&echo &off
 
-&workspace %wrkpath% 
 
-&WATCH convertall.o 
-&echo &on 
+&run 01-MakeMapIndex.aml %source%
+&run 02-Maketaxcode.aml
+&run 03-MakeTaxlot.aml %source%
+&run 04-convertanno.aml
+&run 05-convertseemap.aml
+&run 08-MakeRefLines.aml 
+&run 09-MakeCARTOLINES.aml
+&run 10-MakeCornerPoints.aml
+&run 11-MakePLSSLines.aml
+&run 12-MakeWaterLines.aml
+&run 15-FinishAnno.aml
 
-&s x =  [delete geodb -dir]
-
-copyworkspace P:\taxmaped\apps\ConvertTwnToGeo\GeoDB GeoDb 
-
-&wo GeoDB
-
-&run 01-MakeMapIndex.aml %wrkpath% 
-
-&run 02-Maketaxcode.aml %wrkpath% 
-
-&run 03-MakeTaxlot.aml %wrkpath% 
-
-&run 04-convertanno.aml %wrkpath% 
-
-&run 05-convertseemap.aml %wrkpath% 
-
-/* feature linking not used
-/* &run 06-taxcodeAnno.aml %wrkpath% 
-
-/* feature linking not used
-/*  &run 07-taxlotanno.aml %wrkpath% 
-
-&run 08-MakeRefLines.aml  %wrkpath% 
-
-&run 09-MakeCARTOLINES.aml  %wrkpath% 
-
-&run 10-MakeCornerPoints.aml  %wrkpath% 
-
-&run 11-MakePLSSLines.aml  %wrkpath% 
-
-&run 12-MakeWaterLines.aml  %wrkpath% 
-
-&run 13-MAKESECTIONCORNERANN.AML  %wrkpath% 
-
-&run 15-FinishAnno.aml %wrkpath% 
-
-&wo conversiontools
-
-&run runpy.aml %wrkpath% 
-
+lc
