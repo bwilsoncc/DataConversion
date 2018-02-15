@@ -147,7 +147,8 @@ Y
 
 /* 6.  Add template coverage so annotation gets the correct symbols and levels for each layer
 
-&set templates = %PROJECTHOME%\AnnoTemplateCoverages
+/* I tried using %PROJECTHOME% here but it failed in coverage.py
+&set templates = C:\GeoModel\Clatsop\AnnoTemplateCoverages
 
 &do name &list taxcodanno, taxlotanno, taxmapanno
   &if [exists %name% -cover] &then kill %name%
