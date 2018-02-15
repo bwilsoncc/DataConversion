@@ -1,4 +1,4 @@
-&s source = %PROJECTHOME%/Source/t8-9
+&s source = C:/GeoModel/Clatsop/Source/t8-9
 &type Source is %source%
 
 
