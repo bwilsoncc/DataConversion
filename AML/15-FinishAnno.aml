@@ -46,7 +46,7 @@ copy tmptaxlotan taxlotan
 copy tmptaxcodan taxcodan
 
 /***************************************************************************
-/* 1. Drop unwanted fields and write output to target file.
+&type -- 1. Drop unwanted fields and write output to target file.
 
 dropitem taxmap.tatigds taxmap.tatigds
 X
@@ -145,7 +145,7 @@ Y
 /* SAVE
 /* Q
 
-/* 6.  Add template coverage so annotation gets the correct symbols and levels for each layer
+&type -- 6.  Add template coverage so annotation gets the correct symbols and levels for each layer
 
 /* I tried using %PROJECTHOME% here but it failed in coverage.py
 &set templates = C:\GeoModel\Clatsop\AnnoTemplateCoverages
@@ -217,4 +217,5 @@ q
 kill taxcodanno
 kill taxcodeanbk
 
+&type -- That's all! --
 &return

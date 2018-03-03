@@ -15,7 +15,7 @@
   &if [exists %name% -cover] &then kill %name% all
 &end
 
-/* 1. Select just plss lines  from taxmap  ************************
+&type -- 1. Select just plss lines  from taxmap  ************************
 
 /*  2  plss section line
 /*  7  control reference line
@@ -27,18 +27,18 @@ res taxmaptype = 7 OR taxmaptype = 2 or taxmaptype = 47
 n
 n
 
-/* 2. Intersect with taxbound to get map number  ************************
+&type -- 2. Intersect with taxbound to get map number  ************************
 
 intersect plssline1 mapindex plssline line 
 
-/* 3. add needed items ************************ 
+&type -- 3. add needed items ************************ 
 
 additem PLSSLINE.aat PLSSLINE.aat linetype 3 3 i 
 additem PLSSLINE.aat PLSSLINE.aat source 20 20 c 
 additem PLSSLINE.aat PLSSLINE.aat sourcetype 20 20 c 
 additem PLSSLINE.aat PLSSLINE.aat DIRECTION 12 12 C 
 
-/* 4. assign fields as needed ************************
+&type -- 4. assign fields as needed ************************
 
 &data arc info 
 arc
@@ -71,7 +71,7 @@ CALC LINETYPE = 47
 Q STOP
 &END 
 
-/* 5. DROP ITEMS NOT USED ***************************
+&type -- 5. DROP ITEMS NOT USED ***************************
 
 DROPITEM PLSSLINE.AAT PLSSLINE.AAT               
 ANGLE

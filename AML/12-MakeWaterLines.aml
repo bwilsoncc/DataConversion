@@ -24,7 +24,7 @@
   &if [exists %name% -cover] &then kill %name% all
 &end
 
-/* 1. Select just waterlines from taxmap  ************************
+&type -- 1. Select just waterlines from taxmap  ************************
 
 reselect tmptaxmap3 waterln1 line 
 res taxmaptype = 22 OR taxmaptype = 24 or taxmaptype = 26 or taxmaptype = 28 
@@ -32,12 +32,12 @@ res taxmaptype = 22 OR taxmaptype = 24 or taxmaptype = 26 or taxmaptype = 28
 n
 n
 
-/* 2. Intersect with taxbound to get map number  ************************
+&type -- 2. Intersect with taxbound to get map number  ************************
 
 intersect waterln1 taxbound waterlin line 
 
 
-/* 3. add needed items ************************ 
+&type -- 3. add needed items ************************ 
 
 additem waterlin.aat waterlin.aat watername 64 64 c 
 additem waterlin.aat waterlin.aat linetype 3 3 i 
@@ -45,7 +45,7 @@ additem waterlin.aat waterlin.aat source 20 20 c
 additem waterlin.aat waterlin.aat sourcetype 20 20 c 
 
 
-/* 4. assign fields as needed ************************
+&type -- 4. assign fields as needed ************************
 
 &data arc info 
 arc
@@ -69,8 +69,7 @@ CALC LINETYPE = TAXMAPTYPE              /* water LINE VALUES/types match !!!!
 Q STOP
 &END 
 
-
-/* 5. DROP ITEMS NOT USED ***************************
+&type -- 5. DROP ITEMS NOT USED ***************************
 
 DROPITEM WATERLIN.AAT WATERLIN.AAT               
 WATERLN1#
@@ -125,6 +124,7 @@ Y
 
 &if [exists waterln1 -cover] &then kill waterln1 all
 
+&type -- That's all! --
 &RETURN 
 /********************************************************************
 
@@ -150,9 +150,4 @@ Y
 034-HOOK
 034-LAND-HOOK
 034-DIM-TIC
-
-
-
-
-
 

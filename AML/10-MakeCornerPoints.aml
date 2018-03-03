@@ -41,7 +41,7 @@ COPYINFO K:\taxmaped\apps\biged2\lookupclatsop\INFO!ARC!XXXYYY.LUT
   &return ; &return 
 &end 
 
-/* 1. Select just ref lines  from taxmap  ************************
+&type -- 1. Select just ref lines  from taxmap  ************************
 /*20-HWYSTATION
 /*45-SECTION
 /*44-SUBSECTION
@@ -55,10 +55,10 @@ OR TAXMAPTYPE = 48
 n
 n
 
-/* 2. Intersect with taxbound to get map number  ************************
+&type -- 2. Intersect with taxbound to get map number  ************************
 intersect cornpt1 taxbound corner  point
 
-/* 3. add needed items ************************ 
+&type -- 3. Add needed items ************************ 
 
 additem corner.Pat corner.Pat CornerSymbol 3 3 i 
 additem corner.Pat corner.Pat CornerDesc 64 64 c 
@@ -74,7 +74,7 @@ additem corner.Pat corner.Pat source 20 20 c
 additem corner.Pat corner.Pat sourcetype 20 20 c 
 
 
-/* 4. assign fields as needed ************************
+&type -- 4. Assign fields as needed ************************
 
 &data arc info 
 arc
@@ -138,9 +138,7 @@ Q STOP
 &END 
 
 
-
-
-/* 5. DROP ITEMS NOT USED ***************************
+&type -- 5. DROP ITEMS NOT USED ***************************
 
 DROPITEM CORNER.PAT CORNER.PAT 
 CORNPT1#
@@ -182,5 +180,6 @@ Y
 
 kill cornpt1 all 
 
+&type -- That's all! --
 &RETURN 
 /********************************************************************
