@@ -22,7 +22,7 @@
   &return ; &return 
 &end 
 
-/* 1. Select just ref lines  from tmptaxmap3  ************************
+&type -- 1. Select just ref lines  from tmptaxmap3  ************************
 
 reselect tmptaxmap3 RefLin1 line 
 res taxmaptype = 33 OR taxmaptype = 9 or taxmaptype = 40 OR TAXMAPTYPE = 15 OR TAXMAPTYPE = 17 or taxmaptype = 18 
@@ -30,12 +30,12 @@ res taxmaptype = 33 OR taxmaptype = 9 or taxmaptype = 40 OR TAXMAPTYPE = 15 OR T
 n
 n
 
-/* 2. Intersect with taxbound to get map number  ************************
+&type -- 2. Intersect with taxbound to get map number  ************************
 
 /* This throws a bunch of "item duplicated" warning messages that seem harmless.
 intersect reflin1 taxbound refline  line
 
-/* 3. add needed items ************************ 
+&type -- 3. add needed items ************************ 
 
 additem REFLINE.aat REFLINE.aat linetype 3 3 i 
 additem REFLINE.aat REFLINE.aat source 20 20 c 
@@ -44,7 +44,7 @@ additem REFLINE.aat REFLINE.aat LoStation 20 20 c
 additem REFLINE.aat REFLINE.aat HiStation 20 20 c 
 additem refline.aat refline.aat DIRECTION 12 12 c 
 
-/* 4. assign fields as needed ************************
+&type -- 4. assign fields as needed ************************
 
 /********************************** Assign values to all 
 &data arc info 
@@ -79,7 +79,7 @@ CALC LINETYPE = 18
 Q STOP
 &END 
 
-/* 5. DROP ITEMS NOT USED ***************************
+&type -- 5. DROP ITEMS NOT USED ***************************
 
 DROPITEM REFLINE.AAT REFLINE.AAT               
 REFLIN1#
@@ -125,7 +125,7 @@ Y
 
 &if [exists Reflin1 -cover] &then kill Reflin1 all 
 
-
+&type -- That's all --
 &RETURN 
 /********************************************************************
 LINEFEATURE

@@ -12,20 +12,24 @@
 &WATCH 02-Maketaxcode.wat
 
 /***************************************************************************
-/* 1. delete coverages
 
 &if ^ [exists tmptaxmap1 -cover] &then &do 
- &type No tmptaxmap1, did you run 01-makemapindex.aml??
+ &type Missing tmptaxmap1
   &return ; &return 
 &end 
 
-&do name &list taxcode, taxcode1
+&type -- 1. Delete coverages that will be created here
+
+&do name &list taxcode
   &if [exists %name% -cover] &then kill %name% all
 &end
 
-/* 2. Create taxcodes just the way mapcheck does 
-
+/* Set coordinate precision
 PRECISION DOUBLE DOUBLE
+
+&type -- 2. Copy selected features from taxmap to taxcode coverage
+/* I think we want a line feature and a point feature
+/* Then we can make polygons and annotation later
 
 /* 51 map
 /* 53 ??
@@ -34,69 +38,80 @@ PRECISION DOUBLE DOUBLE
 arcedit
 ec tmptaxmap1
 
+/* Copy lines from tmptaxmap1
 ef arc
+/* transfercoverage tmptaxmap1
+/* transferfeature arc
+/* transferitems PAGENAME MAPSCALE RELIACODE AUTODATE AUTOMETHOD AUTOWHO
 sel taxmaptype = 51 or taxmaptype = 53
-put taxcode1
+put taxcode
 
+/* Copy labels from tmptaxmap1
 ef label
+/* transfercoverage tmptaxmap1
+/* transferfeature label
+/* transferitems PAGENAME MAPSCALE
 sel taxmaptype = 54
-put taxcode1
+put taxcode
 
-/* save     should not have to do a save here, we don't want to change tmptaxmap1
 q
 
-clean taxcode1 # 10 .05
-dissolve taxcode1 taxcode taxcode
+clean taxcode # 10 .05
 
-&data arc info
-arc
-sel TAXCODE.PAT
+/* I removed the dissolve to python, it seems to strip attributes here
+/* dissolve tmptaxcode taxcode taxcode
+/* kill tmptaxcode all
+
+&DATA ARC INFO
+ARC
+SEL TAXCODE.PAT
 CALC TAXCODE-ID = TAXCODE# 
 Q STOP
-&END 
+&END
+
+/* Update USERID, not sure what for.
 IDEDIT TAXCODE 
 
-/* 3. add items to point attributes
+&type -- 3. Add attributes to points
+/* AUTO and friends are already there and populated, using TRANSFERITEMS above.
 
 additem taxcode.pat taxcode.pat county 3 3 i 
 additem taxcode.pat taxcode.pat otaxcode 8 8 c 
 additem taxcode.pat taxcode.pat source 20 20 c 
 additem taxcode.pat taxcode.pat YearCreated 8 10 d 
-additem taxcode.pat taxcode.pat ReliaCode 2 2 i 
-additem taxcode.pat taxcode.pat Autodate 8 10 d 
-additem taxcode.pat taxcode.pat AutoMethod 3 3 c 
-additem taxcode.pat taxcode.pat AutoWho 30 30 c 
+/* additem taxcode.pat taxcode.pat ReliaCode 2 2 i 
+/* additem taxcode.pat taxcode.pat Autodate 8 10 d 
+/* additem taxcode.pat taxcode.pat AutoMethod 3 3 c 
+/* additem taxcode.pat taxcode.pat AutoWho 30 30 c 
 additem taxcode.pat taxcode.pat TAXCODEID 8 8 I
 
-/* 4. calc items 
+&type -- 4. Calc items 
 
-&data arc info 
-arc
-sel TAXCODE.PAT 
+&DATA ARC INFO 
+ARC
+SEL TAXCODE.PAT 
 MOVE TAXCODE TO OTAXCODE
 ALTER TAXCODE 
 CTAXCODE,,,,,,,,,,,
 ALTER OTAXCODE 
 TAXCODE,,,,,,,,,,,, 
-
-CALC COUNTY = 4                                      /**** ASSIGN COUNTY NUMBER!
- 
+CALC COUNTY = 4
 MOVE 'OLD TAXMAPS' TO SOURCE 
 CALC YEARCREATED = $TODAY  
-CALC RELIACODE = 0 
-CALC AUTODATE = $TODAY
-MOVE 'CNV' to AUTOMETHOD 
-MOVE 'MCH' TO AUTOWHO 
-
-CALC TAXCODEID  = TAXCODE-ID 
-
+REM  CALC RELIACODE = 0 
+REM  CALC AUTODATE = $TODAY
+REM  MOVE 'CNV' to AUTOMETHOD 
+REM  MOVE 'MCH' TO AUTOWHO
+REM "MOVE" won't work here because TAXCODE-ID is type B
+CALC TAXCODEID = TAXCODE-ID
 Q STOP
 &END 
 
 /* 5. Drop un-needed items 
 
-dropitem taxcode.pat taxcode.pat CTAXCODE 
-dropitem taxcode.pat taxcode.pat TAXMAPTYPE 
+dropitem taxcode.pat taxcode.pat CTAXCODE
+/* dropitem taxcode.pat taxcode.pat TAXMAPTYPE
+dropitem taxcode.pat taxcode.pat TAXCODE-ID
 
 /* 6. MAKE TAXCODE LINES 
 
@@ -111,7 +126,5 @@ MOVE 'Y' TO CURRENTLINE
 Q STOP
 &END 
 
-
-kill taxcode1 all
-
+&type ---- That's all! ----
 &return

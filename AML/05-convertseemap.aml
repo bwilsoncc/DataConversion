@@ -13,31 +13,37 @@
 /* 
 &WATCH 05-convertseemap.wat
 
+&do name &list tmptaxseemap, tmptaxmap2
+  &if ^ [exists %name% -cover] &then &do 
+    &type Missing %name%
+    &return ; &return
+  &end
+&end
+
 &do name &list tmptaxmap3, taxseemap
   &if [exists %name% -cover] &then kill %name% all
 &end
 
-copy tmptaxmap2 tmptaxmap3
-copy tmpseemap taxseemap
+&type -- Copy the coverages we will modify
 
-/* 1. Save annotation information in fields
+copy tmptaxmap2 tmptaxmap3
+copy tmptaxseemap taxseemap
+
+&type -- 1. Save annotation information in fields
 /* I am pretty sure this entire step is redundant now.
 
 arcedit
 display 9999 1
-
 /* At this point in Polk county version, annotation is in taxmap/annotation.seemap.
 /* Clatsop is still using a separate coverage.
 ec taxseemap
 ef anno.igds
 sel all
-/* This line was removed in the 2/18 (Polk) code so I think this entire edit might do nothing now
 calc mapsize = $size
-
 save
 q 
 
-/* 2. Create taxmap number xref 
+&type -- 2. Create taxmap number xref 
 
 /* 2/13/18
 /* "maplevel" field has been superceded, it's just left over from earlier versions
@@ -80,7 +86,7 @@ ALTER LEVEL
 Q STOP
 &END 
 
-/* Change a reference to A|B|C|D to 1|2|3|4 in the LEVEL field.
+&type -- Change a reference to A|B|C|D to 1|2|3|4 in the LEVEL field.
 arcedit
 ec maplevel info
 sel all
@@ -121,11 +127,10 @@ CALC MAPSCALE = 100
 Q STOP
 &END 
 
-/* 6. Calc feature types to standard and reload back to taxmap anno
+&type -- 6. Calc feature types to standard and save in tmptaxmap3 anno
 
 arcedit
 
-/* Calc attributes in taxseemap to the right values
 ec taxseemap 
 ef anno.igds
 sel all
@@ -137,15 +142,15 @@ calc $SYMBOL = 62
 calc LEVEL = 62
 save
 
-/* Now put it back in taxmap anno
+/* Now put it back in taxmap anno for subsequent stages
+/* Pretty sure this is totally pointless
+/* I think it would need to be done before the anno conversion (step 04) to have any effect
+
 ec tmptaxmap3
 ef anno.igds
-
 get taxseemap
-/* I am getting the warning about attributes "only matching items copied" here...
-
 save 
-
 q
 
+&type -- That's all! --
 &return

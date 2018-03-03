@@ -1,0 +1,202 @@
+/*
+/* Split out of MakeMapIndex so that I could run some python on tmptaxmap1.
+/*
+/* Args:  source      workspace containing read-only coverages
+/*
+/* Input:
+/*   taxmap      coverage from the %source%
+/*
+/* Output:
+/*   tmptaxmap1  copy of the source taxmap coverage, which we create here
+/*
+/********************************************************************************
+&args source
+/* typically run as:  &r 01-maketaxmap.aml %PROJECTHOME%/Source/t4-6
+
+&WATCH 01-MakeTaxmap.wat
+DISPLAY 9999 1
+
+/***************************************************************************
+&type --- 1. Delete coverage that will be created
+
+&do name &list tmptaxmap1
+  &if [exists %name% -cover] &then kill %name% all
+&end
+
+copy %source%\taxmap tmptaxmap1
+
+/* I take it we don't want whatever these things are...??
+/* I suspect there is never anything here, return 100 ("operation failed")
+&s x = [delete tmptaxmap1.acode -info]
+&type delete of acode returned %x%
+&s x = [delete tmptaxmap1.tatatigds -info]
+&type delete of tatatigds returned %x%
+
+/* Set coordinate precision
+
+PRECISION DOUBLE DOUBLE
+
+/* Add ormapnum and pagename to tmptaxmap1 instead of taxbound
+/* That way all subsequent features will have these attributes. I hope.
+
+/* I added PAGENAME so that I can use it later in DDP queries
+/* to restrict what annotation shows up on a map. (Specifically for SEEMAP)
+/* It will be populated from the python that calls this AML.
+
+additem TMPTAXMAP1.PAT     TMPTAXMAP1.PAT      PAGENAME 24 24 C
+additem TMPTAXMAP1.TATIGDS TMPTAXMAP1.TATIGDS  PAGENAME 24 24 C
+
+additem TMPTAXMAP1.PAT TMPTAXMAP1.PAT  MAPNUMBER 20 20 C
+additem TMPTAXMAP1.PAT TMPTAXMAP1.PAT  MAPSCALE 5 5 I 
+
+additem TMPTAXMAP1.PAT TMPTAXMAP1.PAT  ORMAPNUM 24 24 C 
+additem TMPTAXMAP1.PAT TMPTAXMAP1.PAT  MAPSUFTYPE 1 1 C 
+additem TMPTAXMAP1.PAT TMPTAXMAP1.PAT  MAPSUFNUM 4 4 I 
+
+/* -- This is basically a field RENAME operation - create field w correct name, copy content, delete old. --
+
+/* point attributes
+
+additem TMPTAXMAP1.PAT TMPTAXMAP1.PAT  RELIACODE 2 2 I 
+additem TMPTAXMAP1.PAT TMPTAXMAP1.PAT  AUTODATE 8 10 D  
+additem TMPTAXMAP1.PAT TMPTAXMAP1.PAT  AUTOMETHOD 3 3 C  
+additem TMPTAXMAP1.PAT TMPTAXMAP1.PAT  AUTOWHO 30 30 C
+
+&DATA ARC INFO
+ARC
+SEL TMPTAXMAP1.PAT
+CALC RELIACODE = 0 
+MOVE AUTO-DATE TO AUTODATE
+MOVE AUTO-METHOD TO AUTOMETHOD 
+MOVE AUTO-WHO TO AUTOWHO
+Q STOP
+&END
+
+dropitem TMPTAXMAP1.PAT TMPTAXMAP1.PAT  AUTO-REL AUTO-DATE AUTO-METHOD AUTO-WHO
+
+/* line attributes
+
+additem TMPTAXMAP1.AAT TMPTAXMAP1.AAT  RELIACODE 2 2 I 
+additem TMPTAXMAP1.AAT TMPTAXMAP1.AAT  AUTODATE 8 10 D  
+additem TMPTAXMAP1.AAT TMPTAXMAP1.AAT  AUTOMETHOD 3 3 C  
+additem TMPTAXMAP1.AAT TMPTAXMAP1.AAT  AUTOWHO 30 30 C
+
+&DATA ARC INFO
+ARC
+SEL TMPTAXMAP1.AAT
+CALC RELIACODE = 0 
+MOVE AUTO-DATE TO AUTODATE
+MOVE AUTO-METHOD TO AUTOMETHOD 
+MOVE AUTO-WHO TO AUTOWHO
+Q STOP
+&END
+/*
+dropitem TMPTAXMAP1.AAT TMPTAXMAP1.AAT  AUTO-REL AUTO-DATE AUTO-METHOD AUTO-WHO
+
+/* label attributes
+
+additem TMPTAXMAP1.TATIGDS TMPTAXMAP1.TATIGDS  RELIACODE 2 2 I 
+additem TMPTAXMAP1.TATIGDS TMPTAXMAP1.TATIGDS  AUTODATE 8 10 D  
+additem TMPTAXMAP1.TATIGDS TMPTAXMAP1.TATIGDS  AUTOMETHOD 3 3 C  
+additem TMPTAXMAP1.TATIGDS TMPTAXMAP1.TATIGDS  AUTOWHO 30 30 C 
+
+&DATA ARC INFO
+ARC
+SEL TMPTAXMAP1.TATIGDS
+CALC RELIACODE = 0 
+MOVE AUTO-DATE TO AUTODATE
+MOVE AUTO-METHOD TO AUTOMETHOD 
+MOVE AUTO-WHO TO AUTOWHO 
+Q STOP
+&END 
+
+dropitem TMPTAXMAP1.TATIGDS TMPTAXMAP1.TATIGDS  AUTO-REL AUTO-DATE AUTO-METHOD AUTO-WHO
+
+&type --- 4. Calculate map number information
+/* MAPSUFTYPE -- in Dean's version is set to '---' which makes no sense to me so I set it to 0
+
+&DATA ARC INFO
+ARC
+SEL TMPTAXMAP1.PAT 
+MOVE '0' TO MAPSUFTYPE
+MOVE '000' TO MAPSUFNUM 
+MOVE MAPNUM TO MAPNUMBER
+CONCACT ORMAPNUM FROM '040',TOWN,'.00','N',RANGE,'.00','W',SECTION,QTR,'--0000'
+/* Set the scale based on section, qsection, qqsection
+CALC MAPSCALE = 2000
+RES SECTION > 0 
+CALC MAPSCALE = 400
+RES QTR NC '00' 
+CALC MAPSCALE = 200
+RES QTR NC '0'
+CALC MAPSCALE = 100
+Q STOP
+&END 
+
+/* +--------- Brian pasted this section in from ConvertAMLS
+/* |
+&type --- Calculate ormapnum for detail maps
+/* NOTE.... THIS IS STRANGE SECTION. CLATSOP DOES NOT HAVE DETAILS OR SUFFIX MAPS 
+/* NUMBERED. SO I ADDED A SUFFIX NUMBER TO THE FILE AND NOW I HAVE TO GO THRU MAP 
+/* NUMBER BY MAP NUMBER AND ASSIGN THEM A NUMBER. I DID THIS USING AN INFO PROGRMA
+/*
+/* In Clatsop,
+/* Township DIR is ALWAYS N
+/* Range DIR is ALWAYS W
+
+&DATA ARC INFO 
+ARC
+SEL TMPTAXMAP1.PAT 
+ERASE CALCSUFNUM
+Y
+PROGRAM CALCSUFNUM
+FORMAT $CHR10,10,10,C
+FORMAT $NUM1,4,4,I
+SEL TMPTAXMAP1.PAT
+RES DETAILSCALE > 0
+CALC MAPSCALE = DETAILSCALE
+MOVE 'D' TO MAPSUFTYPE 
+SORT MAPNUM
+CALC $NUM1 = 1
+MOVE ' ' TO $CHR10
+PROGRAM SECTION 2
+CALC MAPSUFNUM = 1
+IF MAPNUM = $CHR10
+  CALC $NUM1 = $NUM1 + 1
+  CALC MAPSUFNUM = $NUM1
+ENDIF
+IF MAPNUM NE $CHR10
+  CALC $NUM1 = 1
+  CALC MAPSUFNUM = 1
+ENDIF
+MOVE MAPNUM TO $CHR10
+PROGRAM SECTION 2N
+ASEL
+SORT TMPTAXMAP1#
+
+RUN CALCSUFNUM
+ASEL
+RES DETAILSCALE > 0
+CONCACT ORMAPNUM FROM '040',TOWN,'.00','N',RANGE,'.00','W',SECTION,QTR,'--D',MAPSUFNUM
+Q STOP
+&END
+/* |
+/* +---------
+
+&type --- Run some python to fix that broken ormapnum field and fill in pagename in the point attributes.
+C:/Python27/ArcGIS10.5/python.exe C:/GeoModel/MapProduction/fixormapnum.py [show &wo] tmptaxmap1/point
+
+&type We're back, I wonder if it worked. Check the log file fixormapnum.log
+
+&type --- Change leading spaces (due for example to RANGE being 1 digit) to zeros
+
+arcedit 
+ec tmptaxmap1
+ef label 
+sel all
+change ORMAPNUM C/ /0/G 
+save 
+q  
+
+&type ---- That's all! ----
+&RETURN

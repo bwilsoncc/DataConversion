@@ -24,18 +24,19 @@
 &WATCH 03-MakeTaxlot.wat
 
 /***************************************************************************
-/* 1. delete coverages you will create and check if inputs are present 
 
 &if ^ [exists tmptaxmap1 -cover] &then &do 
  &type No tmptaxmap1, did you run 01-MakeMapIndex.aml??
   &return ; &return 
 &end 
 
+&type -- 1. Delete coverages you will create
+
 &do name &list taxlot, taxlotpt
   &if [exists %name% -cover] &then kill %name% all
 &end
 
-/* 2. Create taxlot coverage 
+&type -- 2. Create taxlot coverage 
 
 PRECISION DOUBLE DOUBLE 
 
@@ -44,7 +45,7 @@ build taxlot line
 build taxlot point 
 tolerance taxlot FUZZY .01 
 
-/* 3. Add point attribute fields
+&type -- 3. Add point attribute fields
 
 additem taxlot.pat taxlot.pat COUNTY,2,2,I 
 additem taxlot.pat taxlot.pat TOWN,2,2,I 
@@ -83,7 +84,7 @@ additem taxlot.pat taxlot.pat AUTO-WHO,3,3,C
 additem taxlot.pat taxlot.pat AUTO-METHOD,3,3,C 
 additem taxlot.pat taxlot.pat AUTO-DATE,8,10,D
 
-/* Add taxlot line attributes
+&type -- Add taxlot line attributes
 
 additem taxlot.aat taxlot.aat TAXMAPTYPE,3,3,I 
 additem taxlot.aat taxlot.aat AUTO-WHO,3,3,C 
@@ -110,7 +111,7 @@ additem taxlot.aat taxlot.aat AUTOMETHOD,3,3,C
 additem taxlot.aat taxlot.aat AUTOWHO,30,30,C 
 
 
-/* 4. Calc values 
+&type -- 4. Calc values 
 
 arcedit
 
@@ -139,7 +140,7 @@ Y
 /* Since there is no label fc in "taxlot" the warning about attributes not matching is specious.
 
 ec %source%/taxlot
-ef label  
+ef label
 
 sel taxmaptype = 31          /* BRINGING TAXLOT LABELS FROM TAXLOT COVER
 put taxlot                   /* TO ENSURE WE GET MAP NUMBER & TAXLOT KEY INFO RIGHT
@@ -182,21 +183,15 @@ sel SECTION = 0
 SAVE
 Q
 
-
-
-
-/* 5. Calculate the values for taxlot label fc
+&type -- 5. Calculate the values for taxlot label fc
 
 arcedit 
 ec taxlot
 ef label
-
 sel all
-change TAXLOT C/ //G                           /* LEFT JUSTIFY TAXLOT NUMBERS 
-
+change TAXLOT C/ //G                           /* Strip spaces out of field
 save
 q
-
 
 &DATA ARC INFO
 ARC
@@ -209,8 +204,8 @@ CALC RELIACODE = AUTO-REL
 MOVE AUTO-METHOD TO AUTOMETHOD 
 MOVE 'OTHER' TO SOURCETYPE 
 MOVE 'OLDTAXMAPS' TO SOURCE 
-/* RES TAXMAPTYPE = 62                         /* Dean added this recently, don't know why
-/* CALC LINETYPE = 32                          /* Dean added this recently, don't know why
+REM RES TAXMAPTYPE = 62                         /* Dean added this recently, don't know why
+REM CALC LINETYPE = 32                          /* Dean added this recently, don't know why
 
 SEL TAXLOT.PAT                                  /* CALC POLYGONS 
 
@@ -223,8 +218,7 @@ CALC SECNUMBER = SECTION
 MOVE '---' TO MAPSUFTYPE 
 MOVE '000' TO MAPSUFNUM
 MOVE '--' TO ANOMALY
-/* CALC MAPACRES = AREA / 43560    /* Sometimes fails with overflow error
-CALC MAPACRES = 0                  /* FIXME: WE NEED TO FIX THIS EVENTUALLY!!!!!!!!!!!!!!!!!!!!!!!!!!!
+REM CALC MAPACRES = AREA / 43560    /* Sometimes fails with overflow error so I moved it to Python
 CALC TAXLOTACRE = LEGACRES1 
 
 ALTER QTR                                         /* PLAY WITH QUARTER QUARTER SECITON NUMBERS
@@ -243,17 +237,15 @@ CALC AUTODATE = AUTO-DATE
 MOVE AUTO-METHOD TO AUTOMETHOD 
 CALC RELIACODE = 0 
 MOVE AUTO-WHO TO AUTOWHO 
-
-                                                       /* GET ORMAP NUMBER STUFF RIGHT
-
+                                                  /* GET ORMAP NUMBER STUFF RIGHT
 MOVE MAPNUM TO MAPNUMBER 
-CONCACT ORMAPNUM FROM '04',TOWN,'.00','S',RANGE,'.00','W',SECTION,QTR,QTRQTR,'--0000'
+CONCACT ORMAPNUM FROM '04',TOWN,'.00','N',RANGE,'.00','W',SECTION,QTR,QTRQTR,'--0000'
 CONCAT ORTAXLOT FROM ORMAPNUM,TAXLOT
 
 Q STOP
 &END 
 
-
+&type -- TOWN and RANGE were blank filled above and we need zero fill
 
 arcedit
 ec taxlot 
@@ -264,50 +256,27 @@ change ORTAXLOT C/ /0/G
 save
 q 
 
-dropitem taxlot.pat taxlot.pat 
-R
-MAPNUM
-SECTION
-OQTR
-TAXMAPKEY
-LEGACRES1
-TAXMAPTYPE
-AUTO-WHO
-AUTO-METHOD
-AUTO-DATE
-CQTR
-CQTRQTR
-[UNQUOTE ' '] 
-Y
-Y
+dropitem taxlot.pat taxlot.pat R MAPNUM SECTION OQTR TAXMAPKEY LEGACRES1 TAXMAPTYPE
+dropitem taxlot.pat taxlot.pat CQTR CQTRQTR
+dropitem taxlot.pat taxlot.pat AUTO-WHO AUTO-METHOD AUTO-DATE
+dropitem taxlot.aat taxlot.aat TAXMAPTYPE ANGLE
 
-dropitem taxlot.aat taxlot.aat 
-TAXMAPTYPE
-AUTO-WHO
-AUTO-METHOD
-AUTO-DATE
-AUTO-REL 
-ANGLE
-[UNQUOTE ' '] 
-Y
-Y
+/* dropitem taxlot.aat taxlot.aat AUTO-WHO AUTO-METHOD AUTO-DATE
 
-/* Copy the points for taxlot labels to taxlotpt
+&type -- Copy the points for taxlot labels to taxlotpt
 
 arcedit 
-
 ec taxlot
 ef label 
 sel all
 put taxlotpt 
-
-/* save   We're not changing anything in taxlot here so no save
 quit 
 
 /* I don't know why the arcedit step did not already do this... 
-/* Yes actually I just checked and it appears there are already attributes
-/* so I commented this out, pretty sure it does nothing at all.
+/* Yes actually I just checked and
+/* pretty sure it does nothing at all.
 /*
-/* build taxlotpt point 
+/*build taxlotpt point
 
+&type -- That's all! --
 &RETURN

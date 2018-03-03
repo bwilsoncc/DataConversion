@@ -1,10 +1,10 @@
 /*
 /*  Dean 10/24/05
 
-/* Args:  source      workspace containing read-only coverages
+/* Args: None
 /*
 /* Input:
-/*   taxbound    coverage from the %source%
+/*   taxbound    coverage from previous step
 /*
 /* Output:
 /*   mapindex    taxmap with a bunch of fields dropped and MAPSCALE added and filled in
@@ -17,13 +17,13 @@
 DISPLAY 9999 1
 
 /***************************************************************************
-/* 1. delete coverages that will be created
+&type -- 1. delete coverages that will be created
 
 &do name &list mapindex
   &if [exists %name% -cover] &then kill %name% all
 &end
 
-/* 8. Drop un-needed point attributes
+&type -- 2. Drop un-needed point attributes
 
 COPY TAXBOUND MAPINDEX 
 DROPITEM MAPINDEX.PAT MAPINDEX.PAT 
@@ -43,10 +43,6 @@ CLOSERROR
 LEGACRES1
 LEGACRES2
 MAPACRES
-AUTO-METHOD
-AUTO-REL
-AUTO-WHO
-AUTO-DATE
 GEOTRANSNO
 TAXMAPTYPE
 TAXMAPSYM
@@ -58,8 +54,7 @@ MQQ
 Y
 Y
 
-/* Remove all the attributes from mapindex polygons,
-/* then add a field called "CURRENT" and set it to "Y"
+&type --  Remove all the attributes from mapindex polygons, then add a field called "CURRENT" and set it to "Y"
 /*
 /* ** This seems pointless since we don't use the polygons at all
 
@@ -71,8 +66,8 @@ additem mapindex.aat mapindex.aat current 1 1 c
 arc
 SEL MAPINDEX.AAT
 MOVE 'Y' TO CURRENT
-
 Q STOP
 &END 
 
+&type -- That's all! --
 &RETURN

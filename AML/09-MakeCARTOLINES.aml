@@ -20,7 +20,7 @@
   &return ; &return 
 &end 
 
-/* 1. Select just cartolines from taxmap  ************************
+&type -- 1. Select just cartolines from taxmap  ************************
 
 reselect tmptaxmap3 cartlin1 line 
 res taxmaptype > 100 OR taxmaptype = 34 
@@ -28,15 +28,15 @@ res taxmaptype > 100 OR taxmaptype = 34
 n
 n
 
-/* 2. Intersect with taxbound to get map number  ************************
+&type -- 2. Intersect with taxbound to get map number  ************************
 
 intersect cartlin1 taxbound cartolin line 
 
-/* 3. add needed items ************************ 
+&type -- 3. add needed items ************************ 
 
 additem cartolin.aat cartolin.aat linetype 3 3 i 
 
-/* 4. assign fields as needed ************************
+&type -- 4. assign fields as needed ************************
 
 &data arc info 
 arc
@@ -74,7 +74,7 @@ CALC LINETYPE = 147                                              /* SECTION - DL
 Q STOP
 &END 
 
-/* 5. DROP ITEMS NOT USED ***************************
+&type -- 5. DROP ITEMS NOT USED ***************************
 
 DROPITEM CARTOLIN.AAT CARTOLIN.AAT
 CARTLIN1#
@@ -129,5 +129,6 @@ Y
 
 kill cartlin1 all 
 
+&type -- That's all! --
 &RETURN 
 /********************************************************************

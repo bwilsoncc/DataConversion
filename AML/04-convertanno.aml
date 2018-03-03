@@ -1,7 +1,3 @@
-/* This script is IDEMPOTENT,
-/* inputs are not modified
-
-
 /* Creates annotation and sets scale
 /*
 /* Args: NONE
@@ -12,11 +8,11 @@
 /*    annostd.lut - a table telling what font, fontsize, bold, italic to use for each level and scale
 /*
 /* Output:
-/*    tmptaxmap2   annotation.igds   move the seemaps annotation to tmpseemap
-/*    tmpseemap    annotation.igds   
+/*    tmptaxmap2   
+/*    tmptaxseemap annotation.igds   
 /*    tmptaxcodan
 /*    tmptaxlotan
-
+/*
 &WATCH 04-convertanno.wat &COMMANDS
 
 &do name &list taxbound, tmptaxmap1
@@ -26,75 +22,35 @@
   &end
 &end
 
-&do name &list tmptaxlotan, tmptaxcodan, tmptaxmap2, tmpseemap, tbigds, igds
-  &if [exists %name% -cover] &then kill %name% all
+&do name &list tmptaxlotan, tmptaxcodan, tmptaxmap2, tmptaxseemap, tbigds, igds
+  &if [exists %name% -cover] &then &do
+    kill %name% all
+  &end
 &end
 
-/* Copy the coverage we will modify and hand off to downstream scripts
-/* and don't touch tmptaxmap1.
+&type -- 1. Copy the coverage we will modify
 copy tmptaxmap1 tmptaxmap2
 
-&S X = [DELETE ANNOSTD.LUT -INFO]
-/*COPYINFO P:\taxmaped\apps\ConvertTwnToGeo\AnnoGenCov\info!ARC!ANNOSTD.LUT  ANNOSTD.LUT 
-copyinfo C:\GeoModel\Clatsop\AnnoGenCov\info!ARC!ANNOSTD.LUT  ANNOSTD.LUT 
+&type -- 2. Add tmptaxmap2 annotation attributes
+/* this section moved from 01-MakeTaxbound.aml
 
-additem tmptaxmap2.tatigds tmptaxmap2.tatigds AUTOWHO,30,30,c 
-additem tmptaxmap2.tatigds tmptaxmap2.tatigds AUTOMETHOD,3,3,c 
-additem tmptaxmap2.tatigds tmptaxmap2.tatigds AUTODATE,8,10,d 
-additem tmptaxmap2.tatigds tmptaxmap2.tatigds STDSIZE,4,5,B 
+/* Create anno.igds -- 
+addtext tmptaxmap2 igds 
 
+additem tmptaxmap2.tatigds tmptaxmap2.tatigds maplevel 3 3 i 
+additem tmptaxmap2.tatigds tmptaxmap2.tatigds mapsize 8 8 n 2 
+additem tmptaxmap2.tatigds tmptaxmap2.tatigds mapscale 5 5 i
+additem tmptaxmap2.tatigds tmptaxmap2.tatigds mapnumber 20 20 c 
 
-/* 2. Save annotation for seemaps and save map assignments 
+/* I already added these to tmptaxmap1 in 01-MakeTaxbound.aml
+/* additem tmptaxmap2.tatigds tmptaxmap2.tatigds AUTOWHO,30,30,c 
+/* additem tmptaxmap2.tatigds tmptaxmap2.tatigds AUTOMETHOD,3,3,c 
+/* additem tmptaxmap2.tatigds tmptaxmap2.tatigds AUTODATE,8,10,d 
+/* additem tmptaxmap2.tatigds tmptaxmap2.tatigds STDSIZE,4,5,B 
 
-/* Current way Dean does it -- there is a separate annotation.seemap subclass.
-/* We don't have that so we do it the old way.
-/* &IF [EXIST TEMPANNO -COVER] &THEN KILL TEMPANNO ALL 
-/* 
-/* arcedit
-/* ec tmptaxmap2
-/* ef anno.igds 
-/* sel $level > 999
-/* &if [show number select] > 0 &then &do 
-/*   put tempanno 
-/*   delete
-/*   ef anno.seemap 
-/*   get tempanno igds 
-/* &end 
-/* save
-/* q
-/* arcedit
-/* ec tmptaxmap2
-/* ef anno.igds
-/* sel all
-/* calc AUTOWHO = 'MCH' 
-/* calc AUTODATE = $TODAY 
-/* calc AUTOMETHOD =  'CNV'
-/* calc maplevel = $level 
-/* calc mapsize = $size
-/* save
-/* q 
+&type -- 3. Build point coverage for annotation and overlay it with map boundary using generate and intersect 
 
-arcedit
-
-ec tmptaxmap2
-ef anno.igds      /* work on the igds subclass of annotation
-sel $level > 1000 /* select whatever this is
-put tmpseemap     /* copy it to tmpseemap
-delete            /* remove it from tmptaxmap2
-
-sel all
-calc AUTOWHO = 'MCH' 
-calc AUTODATE = $TODAY 
-calc AUTOMETHOD =  'CNV'
-calc maplevel = $level 
-calc mapsize = $size
-
-save
-q 
-
-/* 3. Build point coverage for annotation and overlay it with map boundary 
-/*     using generate and intersect 
-
+/* This creates a file "genanno.txt" in the project folder that contains only the OID,X,Y
 &data arc info 
 arc
 SEL TMPTAXMAP2.TATIGDS
@@ -108,17 +64,23 @@ DIS 'end' print
 q stop
 &end 
 
-IDEDIT tmptaxmap2 ANNO.IGDS 
+IDEDIT tmptaxmap2 ANNO.IGDS
 
-generate IGDS
+/* "Generate" is an external command like ARCEDIT
+GENERATE IGDS
 INPUT GENANNO.TXT 
 POINTS 
 Q
-
+/* The points are loaded into some limbo-land tablespace in coverage igds by "generate"
+/* and then turned into an actual point featureclass by this command
 build IGDS point
-intersect igds taxbound tbigds point 
 
-/* 4. GET SCALE FOR BOTH MAPS AND DETAILS 
+/* This effectively copies the attributes from the taxbound points to the igds points and put them in tbigds
+/*   intersect in_cover intersect_cover out_cover POLY|LINE|POINT tolerance JOIN|NOJOIN
+INTERSECT igds taxbound tbigds POINT 
+
+&type -- 4. Copy the important attributes from TBIGDS to TMPTAXMAP2 annotation
+/* We do this by setting up a "RELATE" between the TBIGDS point attributes and the TMPTAXMAP2 annotation attributes
 
 &DATA ARC INFO
 ARC
@@ -130,11 +92,32 @@ SEL TMPTAXMAP2.TATIGDS
 RELATE TBIGDS.PAT BY IGDS-ID WITH ORDER
 CALC $NM = 1 
 MOVE $1MAPNUMBER TO MAPNUMBER 
+MOVE $1PAGENAME TO PAGENAME
+MOVE $1AUTODATE TO AUTODATE
+MOVE $1AUTOMETHOD TO AUTOMETHOD
+MOVE $1AUTOWHO TO AUTOWHO
 CALC MAPSCALE = $1MAPSCALE 
 Q STOP
-&END 
+&END
 
-/* 7. CALC FEATURE TYPES TO STANDARD 
+&type -- 5. Save annotation for tmptaxseemap and save map assignments
+/* Do this AFTER modifying tmptaxmap2 so that we get the updated attributes for PAGENAME etc etc
+
+arcedit
+ec tmptaxmap2
+ef anno.igds 
+sel $level > 999
+&if [show number select] > 0 &then &do
+  put tmptaxseemap
+  delete
+&end
+sel all
+calc maplevel = $level 
+calc mapsize = $size
+save
+q 
+
+&type -- 6. Calc feature types to standard 
 
 arcedit
 
@@ -162,6 +145,9 @@ res $TEXT CN 'P.' OR $TEXT CN '+' OR $TEXT CN 'PC' OR $TEXT CN 'EQUATION' or $TE
 &END  
 
 /* All unassigned annotation is going into ref notes regardless of size 
+/* Do this by selecting everything we're interested in,
+/* then invert the selection, leaving random unassigned things selected
+/* Then mark all those unselected things as LEVEL=36
 
 sel $level = 10 or $level = 13 or $level = 16 or $level = 19 or $level = 20 or $level = 23 or $level = 25 or $level = 27 or $level = 34 or $level = 36 or $level = 37 
 asel $level = 38 or $level = 39 or $level = 41 or $level = 42  or $level = 43 or $level = 45 or $level = 46 or $level = 47 or $level = 54 or $level = 58 or $level = 62
@@ -176,17 +162,22 @@ nsel
 sel all
 /* calc $SIZE = 0
 calc $SYMBOL = $LEVEL 
-calc LEVEL = $LEVEL 
+calc LEVEL = $LEVEL
+
 /* 34 = bearing/distance
 /* 41 = subdivision name
 sel $LEVEL = 34 or $level = 41
 &if [show number select] > 0 &then &do
   calc $SIZE = $SIZE * 1.4                                /* Dean Added Jan 25 2018 
 &end
+
 save 
 q
 
-/* CALC NEW STANDARD SIZES AS SET BY Tom from Christi --- Dean loaded to $SIZE - Jan 2018 
+&type -- 7. Calc new standard sizes as set by Tom from Christi --- Dean loaded to $SIZE - Jan 2018 
+
+&S X = [DELETE ANNOSTD.LUT -INFO]
+copyinfo C:\GeoModel\Clatsop\AnnoGenCov\info!ARC!ANNOSTD.LUT  ANNOSTD.LUT 
 
 &DATA ARC INFO
 ARC
@@ -248,27 +239,22 @@ CALC STDSIZE = $1SIZE2000 * MAPSIZE / 1000
 Q STOP
 &END 
 
-arcedit
 
-ec tmptaxmap2
-ef anno.igds
-sel all
+/* 
+/* arcedit
+/* ec tmptaxmap2
+/* ef anno.igds
+/* sel all
 /* calc $size = stdsize 
-save
-q
+/* save
+/* q
+/* addtext tmptaxmap2 igds 
 
-addtext tmptaxmap2 igds 
 
-/* Create taxlot and taxcode anno - Dean Nov 2017 to remove linked anno 
+&type -- 8. Create taxlot and taxcode anno - Dean Nov 2017 to remove linked anno 
 /* Update so have anno levels for each scale for both 
 
-/* Make intermediate Taxlot Anno
-
-/* Interesting that we keep going back to the taxmap coverage
-/* since at this point we already have created the final taxlot coverage in the previous step
-/* Seems like we could put the annotation into the taxlot coverage at the same time
-/* but just sayin'
-/* Dont really care... 1000 ways to do this task
+&type -- 8.1 Make intermediate Taxlot Anno
 
 reselect tmptaxmap2 tmptaxlotan anno.igds      
 RES level = 37 and ( text cn 'L' or text nc 'C' or text nc 'A' or text nc 'M' or text nc 'U' )
@@ -276,7 +262,7 @@ RES level = 37 and ( text cn 'L' or text nc 'C' or text nc 'A' or text nc 'M' or
 n
 n
 
-/* Make intermediate Taxcode Anno 
+&type -- 8.2. Make intermediate Taxcode Anno 
 
 reselect tmptaxmap2 tmptaxcodan anno.igds      /* make coverage 
 res level = 54 
@@ -284,22 +270,19 @@ res level = 54
 n
 n
 
-/* Delete both taxlot and taxcode from Tmptaxmap2 Anno 
+&type -- 8.3 Delete both taxlot and taxcode from Tmptaxmap2 Anno 
 
 arcedit 
-
 ec tmptaxmap2
 ef anno.igds 
-
 sel $level = 37 and ( $text cn 'L' or $text nc 'C' or $text nc 'A' or $text nc 'M' or $text nc 'U' )
 delete 
 sel $level = 54 
 delete 
-
 save
 q
 
-/* Edit taxcode and taxlot anno and assign new levels based on scale - Dean Jan 2018 
+&type -- 9. Edit taxcode and taxlot anno and assign new levels based on scale - Dean Jan 2018 
 
 arcedit 
 ec tmptaxlotan
@@ -364,10 +347,14 @@ Q
 addtext tmptaxlotan IGDS 
 addtext tmptaxcodan IGDS
 
-/* KILL TEMPS 
+&type -- 99. Kill temp files
 
 &do name &list tbigds, igds
-  &if [exists %name% -cover] &then kill %name% all
+  &if [exists %name% -cover] &then &do
+    &type kill %name%
+    kill %name% all
+  &end
 &end
 
+&type -- That's all! --
 &RETURN
