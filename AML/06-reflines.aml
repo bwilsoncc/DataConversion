@@ -4,16 +4,16 @@
 /* Args: NONE
 /*
 /* Input:
+/*   tmptaxmap2
 /*   taxbound
-/*   tmptaxmap3
 /* 
 /* Output:
 /*   refline
 
-&WATCH 08-MakeRefLines.wat
+&WATCH 06-reflines.wat
 
-&if [exists Reflin1 -cover] &then kill Reflin1 all 
-&if [exists Refline -cover] &then kill Refline all 
+&if [exists tmpline -cover] &then kill tmpline all 
+&if [exists refline -cover] &then kill refline all 
 
 &if ^ [exists taxbound -cover] &then &do 
   &message &popup 
@@ -24,7 +24,7 @@
 
 &type -- 1. Select just ref lines  from tmptaxmap3  ************************
 
-reselect tmptaxmap3 RefLin1 line 
+reselect tmptaxmap2 tmpline line 
 res taxmaptype = 33 OR taxmaptype = 9 or taxmaptype = 40 OR TAXMAPTYPE = 15 OR TAXMAPTYPE = 17 or taxmaptype = 18 
 [unquote ' '] 
 n
@@ -33,7 +33,8 @@ n
 &type -- 2. Intersect with taxbound to get map number  ************************
 
 /* This throws a bunch of "item duplicated" warning messages that seem harmless.
-intersect reflin1 taxbound refline  line
+intersect tmpline taxbound refline line
+kill tmpline all
 
 &type -- 3. add needed items ************************ 
 
@@ -42,7 +43,7 @@ additem REFLINE.aat REFLINE.aat source 20 20 c
 additem REFLINE.aat REFLINE.aat sourcetype 20 20 c 
 additem REFLINE.aat REFLINE.aat LoStation 20 20 c 
 additem REFLINE.aat REFLINE.aat HiStation 20 20 c 
-additem refline.aat refline.aat DIRECTION 12 12 c 
+additem REFLINE.aat REFLINE.aat DIRECTION 12 12 c 
 
 &type -- 4. assign fields as needed ************************
 
@@ -50,9 +51,6 @@ additem refline.aat refline.aat DIRECTION 12 12 c
 &data arc info 
 arc
 sel REFLINE.AAT 
-CALC AUTODATE = AUTO-DATE
-MOVE AUTO-METHOD TO AUTOMETHOD 
-MOVE AUTO-WHO TO AUTOWHO
 MOVE 'OTHER' TO SOURCETYPE
 MOVE 'OLDTAXMAPS' TO SOURCE 
 CALC RELIACODE = 0
@@ -82,15 +80,11 @@ Q STOP
 &type -- 5. DROP ITEMS NOT USED ***************************
 
 DROPITEM REFLINE.AAT REFLINE.AAT               
-REFLIN1#
-REFLIN1-ID
+TMPLINE#
+TMPLINE-ID
 ANGLE
 TAXMAPSYM
 TAXMAPTYPE
-AUTO-METHOD
-AUTO-REL
-AUTO-WHO
-AUTO-DATE
 TAXBOUND-ID
 TAXBOUND#
 AREA
@@ -112,7 +106,6 @@ MAPACRES
 POINTNAME
 GEOTRANSNO
 PAGENUMBER
-CITYNAME
 ORMAPNUM
 MAPSUFTYPE
 MAPSUFNUM
@@ -122,8 +115,6 @@ MQQ
 [UNQUOTE ' '] 
 Y
 Y
-
-&if [exists Reflin1 -cover] &then kill Reflin1 all 
 
 &type -- That's all --
 &RETURN 

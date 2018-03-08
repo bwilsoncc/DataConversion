@@ -1,0 +1,20 @@
+&WATCH 05-annotation.wat
+&echo &on
+
+&type TAXMAP ANNOTATION
+&r maketaxmapanno.aml taxmapan
+
+
+&type TAXLOT ANNOTATION
+&r makeanno.aml taxlotan    SYMBOL = 37
+
+
+&type TAXCODE ANNOTATION
+&r makeanno.aml taxcodan    SYMBOL = 54
+
+
+&type "SEE MAP" ANNOTATION
+&r makeanno.aml seemapan    SYMBOL = 62 OR TEXT LK 'SEE MAP*'
+
+ 
+&return

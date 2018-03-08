@@ -13,7 +13,7 @@
 &args source
 /* typically run as:  &r 01-makemapindex.aml %PROJECTHOME%/Source/t4-6
 
-&WATCH 01-MakeMapIndex.wat
+&WATCH 02-mapindex.wat
 DISPLAY 9999 1
 
 /***************************************************************************

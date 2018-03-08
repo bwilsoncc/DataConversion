@@ -16,12 +16,12 @@
 /* 
 /* Output:
 /*   taxlot   -- arc, point, label pt feature classes
-/*   taxlotpt -- it's the points from the "taxlot" label fc
+/*   taxlotpt -- the points from the taxlot coverage's label fc
 
 &args source
 /* For example, &r 03-maketaxlot.aml %PROJECTHOME%/Source/t4-6
 
-&WATCH 03-MakeTaxlot.wat
+&WATCH 02-taxlot.wat
 
 /***************************************************************************
 
@@ -30,7 +30,7 @@
   &return ; &return 
 &end 
 
-&type -- 1. Delete coverages you will create
+&type -- 1. Delete coverages that will be created
 
 &do name &list taxlot, taxlotpt
   &if [exists %name% -cover] &then kill %name% all
@@ -113,25 +113,24 @@ additem taxlot.aat taxlot.aat AUTOWHO,30,30,C
 
 &type -- 4. Calc values 
 
-arcedit
-
-/* Select the lines from tmptaxmap1 that will be copied into taxlot lines
-ec tmptaxmap1
-ef arc
-
 /* 8  road
 /* 14 rxr
 /* 31 taxlot labels (apparently)
 /* 32 parcel
 /* 51 map boundary
 
-/* I don't know why taxmaptype 51 is in here, it seems wrong to me but I am going with it.
+arcedit
+
+ec tmptaxmap1
+ef arc
+
+/* Select the features from tmptaxmap1 that will be copied into taxlot lines
+/* I don't know why taxmaptype 51 is in here, it seems wrong to me
 sel taxmaptype = 8 or taxmaptype = 14 or taxmaptype = 32 or taxmaptype = 51
 
 put taxlot
 /* Coverage already exists. Do you want to append?  (we just created it up above so this is okay)
 Y
-
 /* I get a warning about the arc attributes not matching,
 /* but it's specious because we are going to populate the attributes down below...
 

@@ -13,7 +13,7 @@
 &args source
 /* typically run as:  &r 01-maketaxmap.aml %PROJECTHOME%/Source/t4-6
 
-&WATCH 01-MakeTaxmap.wat
+&WATCH 01-tmptaxmap1.wat
 DISPLAY 9999 1
 
 /***************************************************************************
@@ -40,8 +40,7 @@ PRECISION DOUBLE DOUBLE
 /* That way all subsequent features will have these attributes. I hope.
 
 /* I added PAGENAME so that I can use it later in DDP queries
-/* to restrict what annotation shows up on a map. (Specifically for SEEMAP)
-/* It will be populated from the python that calls this AML.
+/* to restrict what annotation shows up on a map.
 
 additem TMPTAXMAP1.PAT     TMPTAXMAP1.PAT      PAGENAME 24 24 C
 additem TMPTAXMAP1.TATIGDS TMPTAXMAP1.TATIGDS  PAGENAME 24 24 C

@@ -1,4 +1,4 @@
-/* Creates annotation and sets scale
+/* Creates intermediary file tmptaxmap2
 /*
 /* Args: NONE
 /*
@@ -9,11 +9,8 @@
 /*
 /* Output:
 /*    tmptaxmap2   
-/*    tmptaxseemap annotation.igds   
-/*    tmptaxcodan
-/*    tmptaxlotan
 /*
-&WATCH 04-convertanno.wat &COMMANDS
+&WATCH 04-tmptaxmap2.wat &COMMANDS
 
 &do name &list taxbound, tmptaxmap1
   &if ^ [exists %name% -cover] &then &do 
@@ -22,7 +19,7 @@
   &end
 &end
 
-&do name &list tmptaxlotan, tmptaxcodan, tmptaxmap2, tmptaxseemap, tbigds, igds
+&do name &list tmptaxmap2, tbigds, igds
   &if [exists %name% -cover] &then &do
     kill %name% all
   &end
@@ -32,21 +29,17 @@
 copy tmptaxmap1 tmptaxmap2
 
 &type -- 2. Add tmptaxmap2 annotation attributes
-/* this section moved from 01-MakeTaxbound.aml
+/* this section was moved from 01-MakeTaxbound.aml
 
 /* Create anno.igds -- 
-addtext tmptaxmap2 igds 
 
+addtext tmptaxmap2 igds
+
+additem tmptaxmap2.tatigds tmptaxmap2.tatigds STDSIZE,4,5,B 
 additem tmptaxmap2.tatigds tmptaxmap2.tatigds maplevel 3 3 i 
 additem tmptaxmap2.tatigds tmptaxmap2.tatigds mapsize 8 8 n 2 
 additem tmptaxmap2.tatigds tmptaxmap2.tatigds mapscale 5 5 i
 additem tmptaxmap2.tatigds tmptaxmap2.tatigds mapnumber 20 20 c 
-
-/* I already added these to tmptaxmap1 in 01-MakeTaxbound.aml
-/* additem tmptaxmap2.tatigds tmptaxmap2.tatigds AUTOWHO,30,30,c 
-/* additem tmptaxmap2.tatigds tmptaxmap2.tatigds AUTOMETHOD,3,3,c 
-/* additem tmptaxmap2.tatigds tmptaxmap2.tatigds AUTODATE,8,10,d 
-/* additem tmptaxmap2.tatigds tmptaxmap2.tatigds STDSIZE,4,5,B 
 
 &type -- 3. Build point coverage for annotation and overlay it with map boundary using generate and intersect 
 
@@ -100,36 +93,34 @@ CALC MAPSCALE = $1MAPSCALE
 Q STOP
 &END
 
-&type -- 5. Save annotation for tmptaxseemap and save map assignments
-/* Do this AFTER modifying tmptaxmap2 so that we get the updated attributes for PAGENAME etc etc
+&type -- 5. Calc feature types to standard
+
+/* I don't know that this does anything meaningful at all. $LEVEL is a binary field and MAPLEVEL is integer
+/* so I seem to end up with a field that has no meaningful information in it
+/*&DATA ARC INFO
+/*ARC
+/*SEL TMPTAXMAP2.TATIGDS
+/*MOVE LEVEL TO MAPLEVEL
+/*Q STOP
+/*&end
 
 arcedit
-ec tmptaxmap2
-ef anno.igds 
-sel $level > 999
-&if [show number select] > 0 &then &do
-  put tmptaxseemap
-  delete
-&end
-sel all
-calc maplevel = $level 
-calc mapsize = $size
-save
-q 
-
-&type -- 6. Calc feature types to standard 
-
-arcedit
-
 ec tmptaxmap2 
 ef anno.igds
 
-/* 56 = Zone annotation
-sel $LEVEL = 56
-&if [show number select] > 0 &then &do
-  /* 58 = Adjacent
-  calc $LEVEL = 58 
-&end
+&type -- Populate maplevel and mapsize as defaults
+sel all
+/*calc maplevel = $LEVEL /* this throws an error so I do it in and info session instead, above
+calc mapsize = $SIZE /* this throws an error in the info session, so I do it here, instead. Sigh.
+
+/* 56 = Zone annotation (vegetation per ORS 390.770)
+/* I think Dean has this here because they use it for county boundary?
+/* I don't think we want to touch it.
+/* sel $LEVEL = 56
+/* &if [show number select] > 0 &then &do
+/*   /* 58 = Adjacent
+/*   calc $LEVEL = 58 
+/* &end
 
 /* 20 = Station
 sel $LEVEL = 20 
@@ -153,9 +144,8 @@ sel $level = 10 or $level = 13 or $level = 16 or $level = 19 or $level = 20 or $
 asel $level = 38 or $level = 39 or $level = 41 or $level = 42  or $level = 43 or $level = 45 or $level = 46 or $level = 47 or $level = 54 or $level = 58 or $level = 62
 res $level < 1000 
 nsel 
-
 &if [show number select] > 0 &then &do
-    /* 36 = Reference Notes
+    /* 36 = Annotation class for "Reference Notes"
     calc $LEVEL = 36
 &end 
 
@@ -176,6 +166,17 @@ q
 
 &type -- 7. Calc new standard sizes as set by Tom from Christi --- Dean loaded to $SIZE - Jan 2018 
 
+/* annostd.lut is a table containing
+/* LEVEL        annotation level, eg 10 for Public Road Name
+/* SIZE100      float, points, like 14.0
+/* SIZE200
+/* SIZE400
+/* SIZE2000
+/* STDFONT      font name, eg Arial
+/* STDBOLD      0|1
+/* STDITALIC    0|1
+
+
 &S X = [DELETE ANNOSTD.LUT -INFO]
 copyinfo C:\GeoModel\Clatsop\AnnoGenCov\info!ARC!ANNOSTD.LUT  ANNOSTD.LUT 
 
@@ -184,6 +185,7 @@ ARC
 CALC $NM = 1
 SEL TMPTAXMAP2.TATIGDS
 RELATE ANNOSTD.LUT BY LEVEL WITH ORDER 
+
 ASEL
 RES MAPSCALE = 100
 CALC STDSIZE = $1SIZE100
@@ -235,126 +237,22 @@ CALC STDSIZE = $1SIZE400 * MAPSIZE / 200
 ASEL
 RES MAPSCALE = 2000 AND LEVEL = 54 AND ( MAPSIZE < 999 or MAPSIZE > 1001 ) 
 CALC STDSIZE = $1SIZE2000 * MAPSIZE / 1000
-
 Q STOP
 &END 
 
+&type -- Copy recalculated STDSIZE back to $SIZE
 
-/* 
-/* arcedit
-/* ec tmptaxmap2
-/* ef anno.igds
-/* sel all
-/* calc $size = stdsize 
-/* save
-/* q
-/* addtext tmptaxmap2 igds 
-
-
-&type -- 8. Create taxlot and taxcode anno - Dean Nov 2017 to remove linked anno 
-/* Update so have anno levels for each scale for both 
-
-&type -- 8.1 Make intermediate Taxlot Anno
-
-reselect tmptaxmap2 tmptaxlotan anno.igds      
-RES level = 37 and ( text cn 'L' or text nc 'C' or text nc 'A' or text nc 'M' or text nc 'U' )
-[unquote ' ']
-n
-n
-
-&type -- 8.2. Make intermediate Taxcode Anno 
-
-reselect tmptaxmap2 tmptaxcodan anno.igds      /* make coverage 
-res level = 54 
-[unquote ' ']
-n
-n
-
-&type -- 8.3 Delete both taxlot and taxcode from Tmptaxmap2 Anno 
-
-arcedit 
+arcedit
 ec tmptaxmap2
-ef anno.igds 
-sel $level = 37 and ( $text cn 'L' or $text nc 'C' or $text nc 'A' or $text nc 'M' or $text nc 'U' )
-delete 
-sel $level = 54 
-delete 
+ef anno.igds
+sel all
+calc $size = stdsize 
 save
 q
 
-&type -- 9. Edit taxcode and taxlot anno and assign new levels based on scale - Dean Jan 2018 
-
-arcedit 
-ec tmptaxlotan
-ef anno.igds
-
-sel mapscale = 100 
-&if [show number select] > 0 &then &do  
-  calc $level = 0
-  calc $symbol = 0
-&end 
-
-sel mapscale = 200 
-&if [show number select] > 0 &then &do 
-  calc $level = 1
-  calc $symbol = 1 
-&end
-
-sel mapscale = 400 
-&if [show number select] > 0 &then &do 
-  calc $level = 2
-  calc $symbol = 2 
-&end
-
-sel mapscale = 2000 
-&if [show number select] > 0 &then &do 
-  calc $level = 3
-  calc $symbol = 3 
-&end
-
-save 
-
-ec tmptaxcodan 
-ef anno.igds
-
-sel mapscale = 100 
-&if [show number select] > 0 &then &do 
-  calc $level = 0
-  calc $symbol = 0 
-&end 
-
-sel mapscale = 200 
-&if [show number select] > 0 &then &do  
-  calc $level = 1
-  calc $symbol = 1 
-&end
-
-sel mapscale = 400 
-&if [show number select] > 0 &then &do 
-  calc $level = 2
-  calc $symbol = 2 
-&end
-
-sel mapscale = 2000 
-&if [show number select] > 0 &then &do 
-  calc $level = 3
-  calc $symbol = 3 
-&end
-
-save
-Q
-
-addtext tmptaxlotan IGDS 
-addtext tmptaxcodan IGDS
-
-&type -- 99. Kill temp files
-
-&do name &list tbigds, igds
-  &if [exists %name% -cover] &then &do
-    &type kill %name%
-    kill %name% all
-  &end
-&end
+/* &type -- Kill temp files
+kill tbigds
+kill igds
 
 &type -- That's all! --
 &RETURN

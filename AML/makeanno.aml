@@ -1,0 +1,101 @@
+/* Generate a coverage containing an annotation feature class
+/*
+/* Args:
+/*   name of coverage (a string)
+/*   a selection expression (a string) for example: SYMBOL = 62
+/*
+/* Input:
+/*   tmptaxmap2   annotation.igds
+/*
+/* Output:
+/*   the named coverage
+/* 
+&args COVERAGE QUOTEDSELECTION:REST
+/* REST always wraps things in 'quotes', always.
+&s SELECTION = [unquote %QUOTEDSELECTION%]
+
+&type COVERAGE IS %COVERAGE%
+&type SELECTION IS %SELECTION%
+
+&do name &list tmptaxmap2
+  &if ^ [exists %name% -cover] &then &do 
+    &type Missing %name%
+    &return ; &return
+  &end
+&end
+
+&if [exists %COVERAGE% -cover] &then kill %COVERAGE%
+
+arcedit
+ec tmptaxmap2
+ef anno.igds
+
+/* Some of our data has the symbol set wrong (38?) but the text says SEE MAP so I try to catch that.
+SEL %SELECTION%
+put %COVERAGE%
+q
+
+/* Remember things that look fragmented might be -- two features like "SEE MAP" and "6 10 29DB" will draw together
+
+&type -- Assign new levels based on scale.
+/* I don't think I even need to do this, since I just use
+/* mapscale directly to determine if anno shows or not at a given scale.
+
+arcedit 
+ec %COVERAGE%
+ef anno.igds
+
+sel mapscale = 100 
+&if [show number select] > 0 &then &do
+  calc LEVEL = 0
+  calc SYMBOL = 0
+&end 
+
+sel mapscale = 200 
+&if [show number select] > 0 &then &do 
+  calc LEVEL = 1
+  calc SYMBOL = 1 
+&end
+
+sel mapscale = 400 
+&if [show number select] > 0 &then &do 
+  calc LEVEL = 2
+  calc SYMBOL = 2 
+&end
+
+sel mapscale = 2000 
+&if [show number select] > 0 &then &do 
+  calc LEVEL = 3
+  calc SYMBOL = 3 
+&end
+
+/* NOTE -- THERE ARE OTHER LOWER SCALES THAT GET TOSSED INTO "4"
+sel mapscale < 100
+&if [show number select] > 0 &then &do 
+  calc LEVEL = 4
+  calc SYMBOL = 4
+&end
+
+save
+q
+
+&type Drop unwanted fields
+dropitem %COVERAGE%.tatigds %COVERAGE%.tatigds 
+X
+Y
+OFFSETX
+OFFSETY
+HEIGHT
+TOWN
+RANGE
+SECTION
+QTR
+GEOTRANSNO
+STDSIZE
+MAPLEVEL
+[UNQUOTE ' '] 
+Y
+Y
+
+&type Built %COVERAGE% annotation!
+&return

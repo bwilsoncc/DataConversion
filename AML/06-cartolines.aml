@@ -3,15 +3,15 @@
 /*
 /* Input:
 /*   taxbound
-/*   tmptaxmap3
+/*   tmptaxmap2
 /*
 /* Output:
-/*   cartolin annotation
+/*   cartolin
 /*
-&WATCH 09-MakeCARTOLINES.wat
+&WATCH 06-cartolines.wat
 
 &if [exists cartolin -cover] &then kill cartolin all
-&if [exists cartlin1 -cover] &then kill cartlin1 all 
+&if [exists tmpline -cover] &then kill tmpline all 
 
 &if ^ [exists taxbound -cover] &then &do 
   &message &popup 
@@ -22,7 +22,7 @@
 
 &type -- 1. Select just cartolines from taxmap  ************************
 
-reselect tmptaxmap3 cartlin1 line 
+reselect tmptaxmap2 tmpline line 
 res taxmaptype > 100 OR taxmaptype = 34 
 [unquote ' '] 
 n
@@ -30,7 +30,8 @@ n
 
 &type -- 2. Intersect with taxbound to get map number  ************************
 
-intersect cartlin1 taxbound cartolin line 
+intersect tmpline taxbound cartolin line 
+kill tmpline all
 
 &type -- 3. add needed items ************************ 
 
@@ -42,9 +43,6 @@ additem cartolin.aat cartolin.aat linetype 3 3 i
 arc
 /********************************** Assign values to all 
 sel CARTOLIN.AAT 
-CALC AUTODATE = AUTO-DATE
-MOVE AUTO-METHOD TO AUTOMETHOD 
-MOVE AUTO-WHO TO AUTOWHO 
 ASEL
 /******************************* SET LINE TYPES 
 CALC LINETYPE = 100 
@@ -77,8 +75,8 @@ Q STOP
 &type -- 5. DROP ITEMS NOT USED ***************************
 
 DROPITEM CARTOLIN.AAT CARTOLIN.AAT
-CARTLIN1#
-CARTLIN1-ID
+TMPLINE#
+TMPLINE-ID
 ANGLE
 DISTANCE
 RADIUS
@@ -126,8 +124,6 @@ MQQ
 [UNQUOTE ' '] 
 Y
 Y
-
-kill cartlin1 all 
 
 &type -- That's all! --
 &RETURN 

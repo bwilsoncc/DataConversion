@@ -1,0 +1,94 @@
+/* Generate a coverage containing a taxmap annotation feature class
+/*
+/* This is the one that will contain nearly all the annotation,
+/* EXCEPT taxlots, taxcode, and see maps
+/*
+/* Input:
+/*   tmptaxmap2   annotation.igds
+/*
+/* Output:
+/*   taxmapan
+/* 
+&s COVERAGE = taxmapan
+&type Coverage is %COVERAGE%
+
+&do name &list tmptaxmap2
+  &if ^ [exists %name% -cover] &then &do 
+    &type Missing %name%
+    &return ; &return
+  &end
+&end
+
+&if [exists %COVERAGE% -cover] &then kill %COVERAGE%
+
+/* 37 Taxlot#
+/* 54 Taxcode
+/& 62 See maps
+arcedit
+ec tmptaxmap2
+ef anno.igds
+SEL SYMBOL <> 37 AND SYMBOL <> 54 AND SYMBOL <> 62
+UNSELECT TEXT LK 'SEE MAP*'
+put %COVERAGE%
+q
+
+/* Remember things that look fragmented might be -- two features like "SEE MAP" and "6 10 29DB" will draw together
+
+&type -- Assign new levels based on scale, but DON'T change the symbol.
+/* I don't think I even need to do this, since I just use
+/* mapscale directly to determine if anno shows or not at a given scale.
+
+arcedit 
+ec %COVERAGE%
+ef anno.igds
+
+sel mapscale = 100 
+&if [show number select] > 0 &then &do
+  calc LEVEL = 0
+&end 
+
+sel mapscale = 200 
+&if [show number select] > 0 &then &do 
+  calc LEVEL = 1
+&end
+
+sel mapscale = 400 
+&if [show number select] > 0 &then &do 
+  calc LEVEL = 2
+&end
+
+sel mapscale = 2000 
+&if [show number select] > 0 &then &do 
+  calc LEVEL = 3
+&end
+
+/* NOTE -- THERE ARE OTHER LOWER SCALES THAT GET TOSSED INTO "4"
+sel mapscale < 100
+&if [show number select] > 0 &then &do 
+  calc LEVEL = 4
+&end
+
+
+save
+q
+
+&type Drop unwanted fields
+dropitem %COVERAGE%.tatigds %COVERAGE%.tatigds 
+X
+Y
+OFFSETX
+OFFSETY
+HEIGHT
+TOWN
+RANGE
+SECTION
+QTR
+GEOTRANSNO
+STDSIZE
+MAPLEVEL
+[UNQUOTE ' '] 
+Y
+Y
+
+&type Built %COVERAGE% annotation!
+&return

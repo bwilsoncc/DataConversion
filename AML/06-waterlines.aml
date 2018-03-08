@@ -4,14 +4,14 @@
 /* steps 08, 09, 10, 11, 12 could probably all be refactored into one step
 /* 
 /* Input:
-/*   tmptaxmap3  lines are copied from here
+/*   tmptaxmap2  lines are copied from here
 /*   taxbound    lines are copied from here
 /* 
 /* Output:
 /*   waterlin    will be deleted and recreated
 /*   The coverage will have annotation.igds but we don't use it so don't worry about the extra anno in there.
 
-&WATCH 12-MakeWaterLines.wat
+&WATCH 06-waterlines.wat
 
 &if ^ [exists taxbound -cover] &then &do 
   &message &popup 
@@ -20,13 +20,13 @@
   &return ; &return 
 &end 
 
-&do name &list waterln1, waterlin
+&do name &list tmpline, waterlin
   &if [exists %name% -cover] &then kill %name% all
 &end
 
 &type -- 1. Select just waterlines from taxmap  ************************
 
-reselect tmptaxmap3 waterln1 line 
+reselect tmptaxmap2 tmpline line 
 res taxmaptype = 22 OR taxmaptype = 24 or taxmaptype = 26 or taxmaptype = 28 
 [unquote ' '] 
 n
@@ -34,8 +34,8 @@ n
 
 &type -- 2. Intersect with taxbound to get map number  ************************
 
-intersect waterln1 taxbound waterlin line 
-
+intersect tmpline taxbound waterlin line 
+kill tmpline all
 
 &type -- 3. add needed items ************************ 
 
@@ -44,36 +44,25 @@ additem waterlin.aat waterlin.aat linetype 3 3 i
 additem waterlin.aat waterlin.aat source 20 20 c 
 additem waterlin.aat waterlin.aat sourcetype 20 20 c 
 
-
 &type -- 4. assign fields as needed ************************
 
 &data arc info 
 arc
-
 /********************************** Assign values to all 
-
 sel WATERLIN.AAT 
-CALC AUTODATE = $TODAY 
-MOVE 'CNV' TO  AUTOMETHOD 
-MOVE 'MrComputer' TO AUTOWHO 
-CALC RELIACODE = 0 
 MOVE 'OTHER' TO SOURCETYPE 
 MOVE 'OLD TAXMAPS' TO SOURCE 
-
-
 /******************************* SET LINE TYPES 
-
 ASEL
 CALC LINETYPE = TAXMAPTYPE              /* water LINE VALUES/types match !!!! 
-
 Q STOP
 &END 
 
 &type -- 5. DROP ITEMS NOT USED ***************************
 
 DROPITEM WATERLIN.AAT WATERLIN.AAT               
-WATERLN1#
-WATERLN1-ID
+TMPLINE#
+TMPLINE-ID
 ANGLE
 DISTANCE
 RADIUS
@@ -85,10 +74,6 @@ RADIUS2
 TANGENT2
 TAXMAPSYM
 TAXMAPTYPE
-AUTO-METHOD
-AUTO-REL
-AUTO-WHO
-AUTO-DATE
 GEOTRANSNO
 TAXBOUND#
 AREA
@@ -110,19 +95,15 @@ LEGACRES1
 LEGACRES2
 MAPACRES
 POINTNAME
-PAGENUMBER
 ORMAPNUM
 MAPSUFTYPE
 MAPSUFNUM
 TAXLOTC
-CITYNAME
 MQ
 MQQ
 [UNQUOTE ' '] 
 Y
 Y
-
-&if [exists waterln1 -cover] &then kill waterln1 all
 
 &type -- That's all! --
 &RETURN 

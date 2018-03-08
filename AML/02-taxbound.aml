@@ -13,7 +13,7 @@
 &args source
 /* typically run as:  &r 01-maketaxbound.aml %PROJECTHOME%/Source/t4-6
 
-&WATCH 01-MakeTaxbound.wat
+&WATCH 02-taxbound.wat
 DISPLAY 9999 1
 
 /***************************************************************************

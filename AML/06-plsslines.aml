@@ -7,11 +7,10 @@
 /*   taxbound    used for mapnumber
 /* 
 /* Output:
-/*   plssline, annotation,lines; will be deleted and recreated
-/*   The coverage will have annotation.igds but we don't use it so don't worry about the extra anno in there.
-&WATCH 11-MakePLSSLines.wat
+/*   plssline lines
+&WATCH 06-plsslines.wat
 
-&do name &list plssline, plssline1
+&do name &list plssline, tmpline
   &if [exists %name% -cover] &then kill %name% all
 &end
 
@@ -21,7 +20,7 @@
 /*  7  control reference line
 /* 47  dlc line
 
-reselect tmptaxmap3 plssline1 line 
+reselect tmptaxmap2 tmpline line 
 res taxmaptype = 7 OR taxmaptype = 2 or taxmaptype = 47 
 [unquote ' '] 
 n
@@ -29,7 +28,8 @@ n
 
 &type -- 2. Intersect with taxbound to get map number  ************************
 
-intersect plssline1 mapindex plssline line 
+intersect tmpline taxbound plssline line 
+kill tmpline all
 
 &type -- 3. add needed items ************************ 
 
@@ -42,23 +42,14 @@ additem PLSSLINE.aat PLSSLINE.aat DIRECTION 12 12 C
 
 &data arc info 
 arc
-
 /********************************** Assign values to all 
-
 sel PLSSLINE.AAT 
-MOVE AUTO-WHO TO AUTOWHO
-MOVE AUTO-METHOD TO AUTOMETHOD 
-CALC AUTODATE = AUTO-DATE
-
 MOVE 'OTHER' TO SOURCETYPE
 MOVE 'OLDTAXMAPS' TO SOURCE 
 CALC RELIACODE = 0
 MOVE ANGLE TO DIRECTION
-
 /******************************* SET LINE TYPES 
-
 ASEL
-
 RES TAXMAPTYPE = 7                                     /* gov lots
 CALC LINETYPE = 46 
 ASEL
@@ -67,20 +58,17 @@ CALC LINETYPE = 2
 ASEL
 RES TAXMAPTYPE = 47                                     /* DLC
 CALC LINETYPE = 47
-
 Q STOP
 &END 
 
 &type -- 5. DROP ITEMS NOT USED ***************************
 
 DROPITEM PLSSLINE.AAT PLSSLINE.AAT               
+TMPLINE#
+TMPLINE-ID
 ANGLE
 TAXMAPSYM
 TAXMAPTYPE
-AUTO-METHOD
-AUTO-REL
-AUTO-WHO
-AUTO-DATE
 GEOTRANSNO
 MAPINDEX-ID
 MAPINDEX#
@@ -92,7 +80,5 @@ ORMAPNUM
 [UNQUOTE ' '] 
 Y
 Y
-
-&if [exists plssline1 -cover] &then kill plssline1 all 
 
 &RETURN 
