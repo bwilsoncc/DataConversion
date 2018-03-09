@@ -1,20 +1,24 @@
 &WATCH 05-annotation.wat
-&echo &on
+&echo &off
 
-&type TAXMAP ANNOTATION
-&r maketaxmapanno.aml taxmapan
-
+/* I guess .arc is not getting run when running from Python? Weird.
+/* hence
+&s PROJECTHOME = C:/GeoModel/Clatsop
+&AMLPATH %PROJECTHOME%/AML
+&type PROJECTHOME = %PROJECTHOME%
+&type AMLPATH = [show &amlpath]
 
 &type TAXLOT ANNOTATION
-&r makeanno.aml taxlotan    SYMBOL = 37
-
+&r makeanno taxlotan $SYMBOL = 37
 
 &type TAXCODE ANNOTATION
-&r makeanno.aml taxcodan    SYMBOL = 54
-
+&r makeanno taxcodan $SYMBOL = 54
 
 &type "SEE MAP" ANNOTATION
-&r makeanno.aml seemapan    SYMBOL = 62 OR TEXT LK 'SEE MAP*'
+&r makeanno seemapan $SYMBOL = 62
 
- 
+/* (Catch everything else...)
+&type TAXMAP ANNOTATION
+&r makeanno taxmapan $SYMBOL <> 37 AND $SYMBOL <> 54 AND $SYMBOL <> 62
+
 &return
