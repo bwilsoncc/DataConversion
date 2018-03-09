@@ -11,6 +11,7 @@
 /*    tmptaxmap2   
 /*
 &WATCH 04-tmptaxmap2.wat &COMMANDS
+&ECHO &ON
 
 &do name &list taxbound, tmptaxmap1
   &if ^ [exists %name% -cover] &then &do 
@@ -31,15 +32,23 @@ copy tmptaxmap1 tmptaxmap2
 &type -- 2. Add tmptaxmap2 annotation attributes
 /* this section was moved from 01-MakeTaxbound.aml
 
-/* Create anno.igds -- 
+/* Create anno.igds --
 
+/* I believe this to be completely redundant
 addtext tmptaxmap2 igds
 
-additem tmptaxmap2.tatigds tmptaxmap2.tatigds STDSIZE,4,5,B 
-additem tmptaxmap2.tatigds tmptaxmap2.tatigds maplevel 3 3 i 
-additem tmptaxmap2.tatigds tmptaxmap2.tatigds mapsize 8 8 n 2 
+/* Don't need these, this forces me to use $SYMBOL and $LEVEL to avoid confusion
+dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds SYMBOL
+dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds LEVEL
+
+/*additem tmptaxmap2.tatigds tmptaxmap2.tatigds maplevel 3 3 i 
 additem tmptaxmap2.tatigds tmptaxmap2.tatigds mapscale 5 5 i
 additem tmptaxmap2.tatigds tmptaxmap2.tatigds mapnumber 20 20 c 
+
+/* These are intermediate fields for use in INFO
+/* ORIGSIZE will have the current $SIZE in it and NEWSIZE will hold the new size until we write it back to $SIZE
+additem tmptaxmap2.tatigds tmptaxmap2.tatigds ORIGSIZE 8 8 n 2 
+additem tmptaxmap2.tatigds tmptaxmap2.tatigds NEWSIZE,4,5,B 
 
 &type -- 3. Build point coverage for annotation and overlay it with map boundary using generate and intersect 
 
@@ -57,7 +66,7 @@ DIS 'end' print
 q stop
 &end 
 
-IDEDIT tmptaxmap2 ANNO.IGDS
+IDEDIT TMPTAXMAP2 ANNO.IGDS
 
 /* "Generate" is an external command like ARCEDIT
 GENERATE IGDS
@@ -68,12 +77,13 @@ Q
 /* and then turned into an actual point featureclass by this command
 build IGDS point
 
-/* This effectively copies the attributes from the taxbound points to the igds points and put them in tbigds
-/*   intersect in_cover intersect_cover out_cover POLY|LINE|POINT tolerance JOIN|NOJOIN
+/* This effectively copies the attributes from the taxbound points
+/* to the igds points and put them in tbigds
+/*  format: intersect in_cover intersect_cover out_cover POLY|LINE|POINT tolerance JOIN|NOJOIN
 INTERSECT igds taxbound tbigds POINT 
 
-&type -- 4. Copy the important attributes from TBIGDS to TMPTAXMAP2 annotation
-/* We do this by setting up a "RELATE" between the TBIGDS point attributes and the TMPTAXMAP2 annotation attributes
+&type -- 4. Copy the attributes we need from TBIGDS to tmptaxmap2 annotation
+/* We do this by setting up a "RELATE" between the TBIGDS point attributes and the tmptaxmap2 annotation attributes
 
 &DATA ARC INFO
 ARC
@@ -95,11 +105,26 @@ Q STOP
 
 &type -- 5. Calc feature types to standard
 
+/* There are some TEXT fields with SEE MAP but symbol <> 62, fix that here.
+
+/* FIXME - SYMBOL=38 and TEXT != acres, usually it should be changed
+/* to 62, but you have to use a regular expression to determine that
+/* the pattern is an acre value. Can be any of "0.12 AC" "0.12" "0.12 Ac"
+/* etc...
+
+arcedit
+ec tmptaxmap2
+ef anno.igds
+sel $SYMBOL <> 62 AND TEXT LK 'SEE*MAP*'   /* Can be "SEE MAP" or "SEE      MAP"....
+calc $SYMBOL = 62
+save
+q
+
 /* I don't know that this does anything meaningful at all. $LEVEL is a binary field and MAPLEVEL is integer
 /* so I seem to end up with a field that has no meaningful information in it
 /*&DATA ARC INFO
 /*ARC
-/*SEL TMPTAXMAP2.TATIGDS
+/*SEL tmptaxmap2.TATIGDS
 /*MOVE LEVEL TO MAPLEVEL
 /*Q STOP
 /*&end
@@ -108,14 +133,14 @@ arcedit
 ec tmptaxmap2 
 ef anno.igds
 
-&type -- Populate maplevel and mapsize as defaults
+&type -- Populate MAPLEVEL and ORIGSIZE as defaults
 sel all
 /*calc maplevel = $LEVEL /* this throws an error so I do it in and info session instead, above
-calc mapsize = $SIZE /* this throws an error in the info session, so I do it here, instead. Sigh.
+calc ORIGSIZE = $SIZE /* this throws an error in the info session, so I do it here, instead. Sigh.
 
-/* 56 = Zone annotation (vegetation per ORS 390.770)
-/* I think Dean has this here because they use it for county boundary?
-/* I don't think we want to touch it.
+/* 56 = Zone annotation (Used for beach vegetation line per ORS 390.770)
+/* I think Dean has this here because they use it for county boundary instead
+/* We don't want to touch it.
 /* sel $LEVEL = 56
 /* &if [show number select] > 0 &then &do
 /*   /* 58 = Adjacent
@@ -140,31 +165,25 @@ res $TEXT CN 'P.' OR $TEXT CN '+' OR $TEXT CN 'PC' OR $TEXT CN 'EQUATION' or $TE
 /* then invert the selection, leaving random unassigned things selected
 /* Then mark all those unselected things as LEVEL=36
 
-sel $level = 10 or $level = 13 or $level = 16 or $level = 19 or $level = 20 or $level = 23 or $level = 25 or $level = 27 or $level = 34 or $level = 36 or $level = 37 
-asel $level = 38 or $level = 39 or $level = 41 or $level = 42  or $level = 43 or $level = 45 or $level = 46 or $level = 47 or $level = 54 or $level = 58 or $level = 62
-res $level < 1000 
-nsel 
+SEL $SYMBOL in {10,13,16,19,20,23,25,27,34,36,37,38,39,41,42,43,45,46,47,54,58,62}
+NSEL 
 &if [show number select] > 0 &then &do
     /* 36 = Annotation class for "Reference Notes"
     calc $LEVEL = 36
 &end 
 
-sel all
-/* calc $SIZE = 0
-calc $SYMBOL = $LEVEL 
-calc LEVEL = $LEVEL
-
-/* 34 = bearing/distance
-/* 41 = subdivision name
-sel $LEVEL = 34 or $level = 41
-&if [show number select] > 0 &then &do
-  calc $SIZE = $SIZE * 1.4                                /* Dean Added Jan 25 2018 
-&end
+/*sel all
+/*calc $SIZE = 0
+/*calc $SYMBOL = $LEVEL /* Well I don't think I want to lose this, I want a separate symbol and class id
+/*calc LEVEL = $LEVEL   /* This confused me for quite a while, why two variables?
 
 save 
 q
 
-&type -- 7. Calc new standard sizes as set by Tom from Christi --- Dean loaded to $SIZE - Jan 2018 
+&type -- 7. Use lookup table to adjust font sizes based on SYMBOL and MAPSCALE and ORIGSIZE
+/* "ORIGSIZE" should have the current font size in it.
+
+/* FIXME - there are other mapscales!!!
 
 /* annostd.lut is a table containing
 /* LEVEL        annotation level, eg 10 for Public Road Name
@@ -188,67 +207,122 @@ RELATE ANNOSTD.LUT BY LEVEL WITH ORDER
 
 ASEL
 RES MAPSCALE = 100
-CALC STDSIZE = $1SIZE100
+CALC NEWSIZE = $1SIZE100
 ASEL
 RES MAPSCALE = 200 
-CALC STDSIZE = $1SIZE200
+CALC NEWSIZE = $1SIZE200
 ASEL
 RES MAPSCALE = 400 
-CALC STDSIZE = $1SIZE400
+CALC NEWSIZE = $1SIZE400
 ASEL
 RES MAPSCALE = 2000 
-CALC STDSIZE = $1SIZE2000
+CALC NEWSIZE = $1SIZE2000
 
 ASEL
-RES MAPSCALE = 100 AND LEVEL = 10 AND MAPSIZE <> 20
-CALC STDSIZE = $1SIZE100 * MAPSIZE / 20 
+RES MAPSCALE = 100 AND LEVEL = 10 AND ORIGSIZE <> 20
+CALC NEWSIZE = $1SIZE100 * ORIGSIZE / 20 
 ASEL
-RES MAPSCALE = 200 AND LEVEL = 10 AND MAPSIZE <> 28
-CALC STDSIZE = $1SIZE200  * MAPSIZE / 28 
+RES MAPSCALE = 200 AND LEVEL = 10 AND ORIGSIZE <> 28
+CALC NEWSIZE = $1SIZE200  * ORIGSIZE / 28 
 ASEL
-RES MAPSCALE = 400 AND LEVEL = 10 AND MAPSIZE <> 40
-CALC STDSIZE = $1SIZE400  * MAPSIZE / 40 
+RES MAPSCALE = 400 AND LEVEL = 10 AND ORIGSIZE <> 40
+CALC NEWSIZE = $1SIZE400  * ORIGSIZE / 40 
 ASEL
-RES MAPSCALE = 2000 AND LEVEL = 10 AND MAPSIZE <> 200
-CALC STDSIZE = $1SIZE2000  * MAPSIZE / 200 
+RES MAPSCALE = 2000 AND LEVEL = 10 AND ORIGSIZE <> 200
+CALC NEWSIZE = $1SIZE2000  * ORIGSIZE / 200 
 
 ASEL
-RES MAPSCALE = 100 AND LEVEL = 41 AND MAPSIZE <> 24
-CALC STDSIZE = $1SIZE100  * MAPSIZE / 24 
+RES MAPSCALE = 100 AND LEVEL = 41 AND ORIGSIZE <> 24
+CALC NEWSIZE = $1SIZE100  * ORIGSIZE / 24 
 ASEL
-RES MAPSCALE = 200 AND LEVEL = 41 AND MAPSIZE <> 48
-CALC STDSIZE = $1SIZE200 * MAPSIZE / 48 
+RES MAPSCALE = 200 AND LEVEL = 41 AND ORIGSIZE <> 48
+CALC NEWSIZE = $1SIZE200 * ORIGSIZE / 48 
 ASEL
-RES MAPSCALE = 400 AND LEVEL = 41 AND MAPSIZE <> 96
-CALC STDSIZE = $1SIZE400 * MAPSIZE / 96 
+RES MAPSCALE = 400 AND LEVEL = 41 AND ORIGSIZE <> 96
+CALC NEWSIZE = $1SIZE400 * ORIGSIZE / 96 
 ASEL
-RES MAPSCALE = 2000 AND LEVEL = 41 AND MAPSIZE <> 480
-CALC STDSIZE = $1SIZE2000 * MAPSIZE / 480 
+RES MAPSCALE = 2000 AND LEVEL = 41 AND ORIGSIZE <> 480
+CALC NEWSIZE = $1SIZE2000 * ORIGSIZE / 480 
 
 ASEL
-RES MAPSCALE = 100 AND LEVEL = 54 AND ( MAPSIZE < 49 or MAPSIZE > 51 ) 
-CALC STDSIZE = $1SIZE100  * MAPSIZE / 50
+RES MAPSCALE = 100 AND LEVEL = 54 AND ( ORIGSIZE < 49 or ORIGSIZE > 51 ) 
+CALC NEWSIZE = $1SIZE100  * ORIGSIZE / 50
 ASEL
-RES MAPSCALE = 200 AND LEVEL = 54 AND ( MAPSIZE < 99 or MAPSIZE > 101 ) 
-CALC STDSIZE= $1SIZE200 * MAPSIZE / 100 
+RES MAPSCALE = 200 AND LEVEL = 54 AND ( ORIGSIZE < 99 or ORIGSIZE > 101 ) 
+CALC NEWSIZE= $1SIZE200 * ORIGSIZE / 100 
 ASEL
-RES MAPSCALE = 400 AND LEVEL = 54 AND ( MAPSIZE < 199 or MAPSIZE > 201 ) 
-CALC STDSIZE = $1SIZE400 * MAPSIZE / 200
+RES MAPSCALE = 400 AND LEVEL = 54 AND ( ORIGSIZE < 199 or ORIGSIZE > 201 ) 
+CALC NEWSIZE = $1SIZE400 * ORIGSIZE / 200
 ASEL
-RES MAPSCALE = 2000 AND LEVEL = 54 AND ( MAPSIZE < 999 or MAPSIZE > 1001 ) 
-CALC STDSIZE = $1SIZE2000 * MAPSIZE / 1000
+RES MAPSCALE = 2000 AND LEVEL = 54 AND ( ORIGSIZE < 999 or ORIGSIZE > 1001 ) 
+CALC NEWSIZE = $1SIZE2000 * ORIGSIZE / 1000
 Q STOP
-&END 
+&END
 
-&type -- Copy recalculated STDSIZE back to $SIZE
+/* I think everything should be handled with the lookup table!
+/* one change at a time, please
+
 
 arcedit
 ec tmptaxmap2
 ef anno.igds
-sel all
-calc $size = stdsize 
+
+&type SPECIAL CASE for dimensioning and subdivisions
+
+/* 34 = bearing/distance
+/* 41 = subdivision name
+sel $SYMBOL = 34 or $SYMBOL = 41
+&if [show number select] > 0 &then &do
+&type Fixing SYMBOL 34 and 41, [show number select] instances.
+calc NEWSIZE = $SIZE * 1.4
+&end
+
+&type SPECIAL CASE and ARBITRARY *yet another* for "see maps" size
+
+sel $SYMBOL = 62
+&type Total "SEE MAPS" in this township: [SHOW NUMBER SELECT]
+CALC $LEVEL = 62
+SEL $SYMBOL = 62 AND MAPSCALE = 100
+&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
+  CALC NEWSIZE = 15.75
+/*  CALC ORIGSIZE = 11.25
+&END 
+SEL $SYMBOL = 62 AND MAPSCALE = 200
+&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
+  CALC NEWSIZE = 31.5
+/*   CALC ORIGSIZE = 22.5
+&END 
+SEL $SYMBOL = 62 AND MAPSCALE = 400
+&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
+  CALC NEWSIZE = 63
+/*   CALC ORIGSIZE = 45
+&END 
+SEL $SYMBOL = 62 AND MAPSCALE = 2000
+&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
+  CALC NEWSIZE = 315
+/*   CALC ORIGSIZE = 225
+&END 
+
 save
 q
+
+&type -- Copy recalculated NEWSIZE back to $SIZE
+
+arcedit
+ec tmptaxmap2
+ef anno.igds
+
+/* Do not overwrite a legit size with a ZERO!
+sel NEWSIZE > 0
+calc $size = NEWSIZE
+
+/* sel NEWSIZE = 0
+/* list $SYMBOL $LEVEL $SIZE MAPSCALE TEXT
+save
+q
+
+dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds ORIGSIZE
+dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds NEWSIZE
 
 /* &type -- Kill temp files
 kill tbigds
