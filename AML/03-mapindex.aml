@@ -1,0 +1,73 @@
+/*
+/*  Dean 10/24/05
+
+/* Args: None
+/*
+/* Input:
+/*   taxbound    coverage from previous step
+/*
+/* Output:
+/*   mapindex    taxmap with a bunch of fields dropped and MAPSCALE added and filled in
+
+/********************************************************************************
+&args source
+/* typically run as:  &r 01-makemapindex.aml %PROJECTHOME%/Source/t4-6
+
+&WATCH 02-mapindex.wat
+DISPLAY 9999 1
+
+/***************************************************************************
+&type -- 1. delete coverages that will be created
+
+&do name &list mapindex
+  &if [exists %name% -cover] &then kill %name% all
+&end
+
+&type -- 2. Drop un-needed point attributes
+
+COPY TAXBOUND MAPINDEX 
+DROPITEM MAPINDEX.PAT MAPINDEX.PAT 
+IGDS-GGNO
+MAPNUM
+MAPSUFTYPE
+MAPSUFNUM
+TOWN
+RANGE
+SECTION
+QTR
+TAXLOT
+REFOREST
+TAXCODE
+CLOSEMETHOD
+CLOSERROR
+LEGACRES1
+LEGACRES2
+MAPACRES
+GEOTRANSNO
+TAXMAPTYPE
+TAXMAPSYM
+POINTNAME
+TAXLOTC
+MQ
+MQQ
+[UNQUOTE ' '] 
+Y
+Y
+
+&type --  Remove all the attributes from mapindex polygons, then add a field called "CURRENT" and set it to "Y"
+/*
+/* ** This seems pointless since we don't use the polygons at all
+
+&s x = [delete mapindex.aat -info]
+build mapindex line
+additem mapindex.aat mapindex.aat current 1 1 c 
+
+&data arc info
+arc
+SEL MAPINDEX.AAT
+MOVE 'Y' TO CURRENT
+Q STOP
+&END 
+
+&type -- That's all! --
+&RETURN
