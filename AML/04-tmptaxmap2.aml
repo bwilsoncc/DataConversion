@@ -11,7 +11,6 @@
 /*    tmptaxmap2   
 /*
 &WATCH 04-tmptaxmap2.wat &COMMANDS
-&ECHO &ON
 
 &do name &list taxbound, tmptaxmap1
   &if ^ [exists %name% -cover] &then &do 
@@ -37,9 +36,12 @@ copy tmptaxmap1 tmptaxmap2
 /* I believe this to be completely redundant
 addtext tmptaxmap2 igds
 
-/* Don't need these, this forces me to use $SYMBOL and $LEVEL to avoid confusion
-dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds SYMBOL
-dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds LEVEL
+
+/* These are just needed to deal with code that can't handle the $
+/* with passing the $ as an arg in 05-annotation.
+/* This means we have to copy $* into * down below in a few lines...
+/* dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds LEVEL
+/* dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds SYMBOL
 
 /*additem tmptaxmap2.tatigds tmptaxmap2.tatigds maplevel 3 3 i 
 additem tmptaxmap2.tatigds tmptaxmap2.tatigds mapscale 5 5 i
@@ -47,8 +49,12 @@ additem tmptaxmap2.tatigds tmptaxmap2.tatigds mapnumber 20 20 c
 
 /* These are intermediate fields for use in INFO
 /* ORIGSIZE will have the current $SIZE in it and NEWSIZE will hold the new size until we write it back to $SIZE
+
+/* NEWSIZE used to be a binary value and I am thinking a floating point number makes more sense,
+/* otherwise the values get truncated in the calculations.
 additem tmptaxmap2.tatigds tmptaxmap2.tatigds ORIGSIZE 8 8 n 2 
-additem tmptaxmap2.tatigds tmptaxmap2.tatigds NEWSIZE,4,5,B 
+additem tmptaxmap2.tatigds tmptaxmap2.tatigds NEWSIZE  8 8 n 2 
+/*additem tmptaxmap2.tatigds tmptaxmap2.tatigds NEWSIZE,4,5,B 
 
 &type -- 3. Build point coverage for annotation and overlay it with map boundary using generate and intersect 
 
@@ -115,8 +121,12 @@ Q STOP
 arcedit
 ec tmptaxmap2
 ef anno.igds
+
 sel $SYMBOL <> 62 AND TEXT LK 'SEE*MAP*'   /* Can be "SEE MAP" or "SEE      MAP"....
-calc $SYMBOL = 62
+&if [show number select] > 0 &then &do
+  calc $SYMBOL = 62
+&end
+
 save
 q
 
@@ -175,7 +185,7 @@ NSEL
 /*sel all
 /*calc $SIZE = 0
 /*calc $SYMBOL = $LEVEL /* Well I don't think I want to lose this, I want a separate symbol and class id
-/*calc LEVEL = $LEVEL   /* This confused me for quite a while, why two variables?
+calc LEVEL = $LEVEL
 
 save 
 q
@@ -204,7 +214,6 @@ ARC
 CALC $NM = 1
 SEL TMPTAXMAP2.TATIGDS
 RELATE ANNOSTD.LUT BY LEVEL WITH ORDER 
-
 ASEL
 RES MAPSCALE = 100
 CALC NEWSIZE = $1SIZE100
@@ -217,7 +226,6 @@ CALC NEWSIZE = $1SIZE400
 ASEL
 RES MAPSCALE = 2000 
 CALC NEWSIZE = $1SIZE2000
-
 ASEL
 RES MAPSCALE = 100 AND LEVEL = 10 AND ORIGSIZE <> 20
 CALC NEWSIZE = $1SIZE100 * ORIGSIZE / 20 
@@ -230,7 +238,6 @@ CALC NEWSIZE = $1SIZE400  * ORIGSIZE / 40
 ASEL
 RES MAPSCALE = 2000 AND LEVEL = 10 AND ORIGSIZE <> 200
 CALC NEWSIZE = $1SIZE2000  * ORIGSIZE / 200 
-
 ASEL
 RES MAPSCALE = 100 AND LEVEL = 41 AND ORIGSIZE <> 24
 CALC NEWSIZE = $1SIZE100  * ORIGSIZE / 24 
@@ -243,7 +250,6 @@ CALC NEWSIZE = $1SIZE400 * ORIGSIZE / 96
 ASEL
 RES MAPSCALE = 2000 AND LEVEL = 41 AND ORIGSIZE <> 480
 CALC NEWSIZE = $1SIZE2000 * ORIGSIZE / 480 
-
 ASEL
 RES MAPSCALE = 100 AND LEVEL = 54 AND ( ORIGSIZE < 49 or ORIGSIZE > 51 ) 
 CALC NEWSIZE = $1SIZE100  * ORIGSIZE / 50
@@ -261,7 +267,6 @@ Q STOP
 
 /* I think everything should be handled with the lookup table!
 /* one change at a time, please
-
 
 arcedit
 ec tmptaxmap2
@@ -314,13 +319,27 @@ ef anno.igds
 
 /* Do not overwrite a legit size with a ZERO!
 sel NEWSIZE > 0
-calc $size = NEWSIZE
+&if [show number select] > 0 &then &do
+  calc $size = NEWSIZE
+&end
 
 /* sel NEWSIZE = 0
 /* list $SYMBOL $LEVEL $SIZE MAPSCALE TEXT
 save
 q
 
+&type Hack for 05-annotation, copy $SYMBOL to SYMBOL
+arcedit
+ec tmptaxmap2
+ef anno.igds
+sel all
+calc SYMBOL = $SYMBOL
+save
+q
+
+/* We're done with these now, delete them so they don't
+/* confuse Brian later on...
+dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds LEVEL
 dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds ORIGSIZE
 dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds NEWSIZE
 
