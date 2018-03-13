@@ -21,7 +21,7 @@
 &args source
 /* For example, &r 03-maketaxlot.aml %PROJECTHOME%/Source/t4-6
 
-&WATCH 02-taxlot.wat
+&WATCH 03-taxlot.wat
 
 /***************************************************************************
 

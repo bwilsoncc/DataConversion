@@ -12,20 +12,24 @@
 /*   the named coverage
 /* 
 &args COVERAGE QUOTEDSELECTION:REST
-/* Using ":REST" always wraps things in 'quotes', always. So remove them.
 &s SELECTION = [unquote %QUOTEDSELECTION%]
+&s TEMPLATE = C:/GeoModel/Clatsop/AnnoTemplateCoverages/taxmapanno
+
+&echo &on
 
 &type COVERAGE  = %COVERAGE%
 &type SELECTION = %SELECTION%
 
-&do name &list tmptaxmap2
+&do name &list tmptaxmap2 %TEMPLATE%
   &if ^ [exists %name% -cover] &then &do 
     &type ERROR -- Missing %name%
     &return ; &return
   &end
 &end
 
-&if [exists %COVERAGE% -cover] &then kill %COVERAGE%
+/* &s TMPCOVERAGE = tmp%COVERAGE%
+/* &if [exists %TMPCOVERAGE% -cover] &then kill %TMPCOVERAGE% all
+&if [exists %COVERAGE% -cover] &then kill %COVERAGE% all
 
 arcedit
 ec tmptaxmap2
@@ -33,8 +37,15 @@ ef anno.igds
 
 /* Some of our data has the symbol set wrong (38?) but the text says SEE MAP so I try to catch that.
 SEL %SELECTION%
-put %COVERAGE%
+&if [show number select] > 0 &then &do
+  put %COVERAGE%
+&end
 q
+
+&if [exists %COVERAGE% -cover] = .false. &then &do
+  &type No symbol matches for %COVERAGE% %SELECTION%
+  &return ; &return
+&end
 
 /* Remember things that look fragmented might be -- two features like "SEE MAP" and "6 10 29DB" will draw together
 
@@ -147,6 +158,22 @@ GEOTRANSNO
 [UNQUOTE ' '] 
 Y
 Y
+
+/* ========================================================================
+
+/* Now to get the proper annotation classes,
+/* create the final anno coverage by appending the template and our data
+
+/* arcedit
+/* ec %TEMPLATE%
+/* ef anno.igds
+/* get %TMPCOVERAGE% 
+/* put %COVERAGE%
+/* Q
+/* &if [exists %TMPCOVERAGE% -cover] &then kill %TMPCOVERAGE% all
+
+/* We are done with this stupid hack
+dropitem %COVERAGE%.tatigds %COVERAGE%.tatigds SYMBOL
 
 &type Built %COVERAGE% annotation!
 &return
