@@ -1,5 +1,15 @@
+/* Generate a coverage containing an annotation feature class
+/*
+/* Args:
+/*   NONE
+/* Input:
+/*   tmptaxmap2 anno.igds
+/*
+/* Output:
+/*   the named coverage
+/* 
+
 &WATCH 05-annotation.wat
-&echo &off
 
 /* I guess .arc is not getting run when running from Python? Weird.
 /* hence
@@ -8,17 +18,20 @@
 &type PROJECTHOME = %PROJECTHOME%
 &type AMLPATH = [show &amlpath]
 
+&type BEARING AND DISTANCE
+&r makeanno bearingan SYMBOL = 34
+
 &type TAXLOT ANNOTATION
-&r makeanno taxlotan $SYMBOL = 37
+&r makeanno taxlotan SYMBOL = 37
 
 &type TAXCODE ANNOTATION
-&r makeanno taxcodan $SYMBOL = 54
+&r makeanno taxcodan SYMBOL = 54
 
 &type "SEE MAP" ANNOTATION
-&r makeanno seemapan $SYMBOL = 62
+&r makeanno seemapan SYMBOL = 62
 
 /* (Catch everything else...)
 &type TAXMAP ANNOTATION
-&r makeanno taxmapan $SYMBOL <> 37 AND $SYMBOL <> 54 AND $SYMBOL <> 62
+&r makeanno taxmapan SYMBOL <> 34 AND SYMBOL <> 37 AND SYMBOL <> 54 AND SYMBOL <> 62
 
 &return
