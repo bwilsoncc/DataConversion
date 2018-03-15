@@ -63,79 +63,47 @@ arcedit
 ec %COVERAGE%
 ef anno.igds
 
-/* NOTE -- PERHAPS THERE ARE OTHER SCALES THAT GET TOSSED IN HERE, CHANGE ME???
-/*         There are entries with mapscale = 0
-/*         Basically level 0 = DEFAULT
-sel mapscale in {10, 20, 30, 40, 50, 60, 100, 200, 400, 800, 2000}
-nsel
+/* All the large scales get tossed into one level, 0.
+sel mapscale < 100
 &if [show number select] > 0 &then &do 
   calc $LEVEL = 0
+  calc $SYMBOL = 0
 &end
 
-sel mapscale = 10
+nsel
 &if [show number select] > 0 &then &do
-  &type SCALE 10
-  calc $LEVEL = 1
-&end 
-
-sel mapscale = 20
-&if [show number select] > 0 &then &do
-  &type SCALE 20
-  calc $LEVEL = 2
-&end 
-
-sel mapscale = 30 
-&if [show number select] > 0 &then &do
-  &type SCALE 30
-  calc $LEVEL = 3
-&end 
-
-sel mapscale = 40
-&if [show number select] > 0 &then &do
-  &type SCALE 40
-  calc $LEVEL = 4
-&end 
-
-sel mapscale = 50
-&if [show number select] > 0 &then &do
-  &type SCALE 50
+  /* This catches the leftover cases where scale is not a known value, "this should never happen!"
+  /* All scales >= 100 get set to 5 here, then known scales are set to correct values below.
   calc $LEVEL = 5
-&end 
-
-sel mapscale = 60
-&if [show number select] > 0 &then &do
-  &type SCALE 60
-  calc $LEVEL = 6
-&end 
+  calc $SYMBOL = 5
+&end
 
 sel mapscale = 100
 &if [show number select] > 0 &then &do
   &type SCALE 100
-  calc $LEVEL = 7
-&end 
+  calc $LEVEL = 1
+  calc $SYMBOL = 1
+&end
 
 sel mapscale = 200 
 &if [show number select] > 0 &then &do 
   &type SCALE 200
-  calc $LEVEL = 8
+  calc $LEVEL = 2
+  calc $SYMBOL = 2
 &end
 
 sel mapscale = 400 
 &if [show number select] > 0 &then &do 
   &type SCALE 400
-  calc $LEVEL = 9
-&end
-
-sel mapscale = 800 
-&if [show number select] > 0 &then &do 
-  &type SCALE 800
-  calc $LEVEL = 10
+  calc $LEVEL = 3
+  calc $SYMBOL = 3
 &end
 
 sel mapscale = 2000 
 &if [show number select] > 0 &then &do
   &type SCALE 2000
-  calc $LEVEL = 11
+  calc $LEVEL = 4
+  calc $SYMBOL = 4
 &end
 
 save
