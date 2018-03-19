@@ -5,19 +5,19 @@
 /*
 /* Input:
 /*   tmptaxmap2
-/*   taxbound
+/*   tmptaxbound
 /* 
 /* Output:
-/*   refline
+/*   tmprefl
 
 &WATCH 06-reflines.wat
 
 &if [exists tmpline -cover] &then kill tmpline all 
-&if [exists refline -cover] &then kill refline all 
+&if [exists tmprefl -cover] &then kill tmprefl all 
 
-&if ^ [exists taxbound -cover] &then &do 
+&if ^ [exists tmptaxbound -cover] &then &do 
   &message &popup 
-  &type 'ERROR - MISSING TAXBOUND'
+  &type 'ERROR - MISSING TMPTAXBOUND'
   &message &on
   &return ; &return 
 &end 
@@ -30,27 +30,27 @@ res taxmaptype = 33 OR taxmaptype = 9 or taxmaptype = 40 OR TAXMAPTYPE = 15 OR T
 n
 n
 
-&type -- 2. Intersect with taxbound to get map number  ************************
+&type -- 2. Intersect with tmptaxbound to get map number  ************************
 
 /* This throws a bunch of "item duplicated" warning messages that seem harmless.
-intersect tmpline taxbound refline line
+intersect tmpline tmptaxbound tmprefl line
 kill tmpline all
 
 &type -- 3. add needed items ************************ 
 
-additem REFLINE.aat REFLINE.aat linetype 3 3 i 
-additem REFLINE.aat REFLINE.aat source 20 20 c 
-additem REFLINE.aat REFLINE.aat sourcetype 20 20 c 
-additem REFLINE.aat REFLINE.aat LoStation 20 20 c 
-additem REFLINE.aat REFLINE.aat HiStation 20 20 c 
-additem REFLINE.aat REFLINE.aat DIRECTION 12 12 c 
+additem TMPREFL.aat TMPREFL.aat linetype 3 3 i 
+additem TMPREFL.aat TMPREFL.aat source 20 20 c 
+additem TMPREFL.aat TMPREFL.aat sourcetype 20 20 c 
+additem TMPREFL.aat TMPREFL.aat LoStation 20 20 c 
+additem TMPREFL.aat TMPREFL.aat HiStation 20 20 c 
+additem TMPREFL.aat TMPREFL.aat DIRECTION 12 12 c 
 
 &type -- 4. assign fields as needed ************************
 
 /********************************** Assign values to all 
 &data arc info 
 arc
-sel REFLINE.AAT 
+sel TMPREFL.AAT 
 MOVE 'OTHER' TO SOURCETYPE
 MOVE 'OLDTAXMAPS' TO SOURCE 
 CALC RELIACODE = 0
@@ -79,14 +79,14 @@ Q STOP
 
 &type -- 5. DROP ITEMS NOT USED ***************************
 
-DROPITEM REFLINE.AAT REFLINE.AAT               
+DROPITEM TMPREFL.AAT TMPREFL.AAT               
 TMPLINE#
 TMPLINE-ID
 ANGLE
 TAXMAPSYM
 TAXMAPTYPE
-TAXBOUND-ID
-TAXBOUND#
+TMPTAXBOUND-ID
+TMPTAXBOUND#
 AREA
 PERIMETER
 IGDS-GGNO

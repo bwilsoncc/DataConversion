@@ -7,7 +7,7 @@
 /*   tmptaxmap1  modified copy of the source taxmap coverage
 /*
 /* Output:
-/*   taxbound    map and detail map polygons copied from tmptaxmap1
+/*   tmptaxbound map and detail map polygons copied from tmptaxmap1
 /*
 /********************************************************************************
 &args source
@@ -19,7 +19,7 @@ DISPLAY 9999 1
 /***************************************************************************
 &type -- 1. Delete coverage that will be created
 
-&do name &list taxbound
+&do name &list tmptaxbound
   &if [exists %name% -cover] &then kill %name% all
 &end
 
@@ -35,15 +35,15 @@ ec tmptaxmap1
 
 ef arc
 sel taxmaptype = 51 or taxmaptype = 52
-put taxbound
+put tmptaxbound
 
 ef label
 sel taxmaptype = 51 or taxmaptype = 52
-put taxbound
+put tmptaxbound
 
 q 
 
-clean taxbound # 10 .1
+clean tmptaxbound # 10 .1
 
 /* I have no idea what these fields are for, just some left over code
 

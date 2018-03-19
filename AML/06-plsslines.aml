@@ -4,13 +4,13 @@
 /* 
 /* Input:
 /*   tmptaxmap3  lines are copied from here
-/*   taxbound    used for mapnumber
+/*   tmptaxbound    used for mapnumber
 /* 
 /* Output:
-/*   plssline lines
+/*   tmpplssl lines
 &WATCH 06-plsslines.wat
 
-&do name &list plssline, tmpline
+&do name &list tmpplssl, tmpline
   &if [exists %name% -cover] &then kill %name% all
 &end
 
@@ -26,24 +26,24 @@ res taxmaptype = 7 OR taxmaptype = 2 or taxmaptype = 47
 n
 n
 
-&type -- 2. Intersect with taxbound to get map number  ************************
+&type -- 2. Intersect with tmptaxbound to get map number  ************************
 
-intersect tmpline taxbound plssline line 
+intersect tmpline tmptaxbound tmpplssl line 
 kill tmpline all
 
 &type -- 3. add needed items ************************ 
 
-additem PLSSLINE.aat PLSSLINE.aat linetype 3 3 i 
-additem PLSSLINE.aat PLSSLINE.aat source 20 20 c 
-additem PLSSLINE.aat PLSSLINE.aat sourcetype 20 20 c 
-additem PLSSLINE.aat PLSSLINE.aat DIRECTION 12 12 C 
+additem TMPPLSSL.aat TMPPLSSL.aat linetype 3 3 i 
+additem TMPPLSSL.aat TMPPLSSL.aat source 20 20 c 
+additem TMPPLSSL.aat TMPPLSSL.aat sourcetype 20 20 c 
+additem TMPPLSSL.aat TMPPLSSL.aat DIRECTION 12 12 C 
 
 &type -- 4. assign fields as needed ************************
 
 &data arc info 
 arc
 /********************************** Assign values to all 
-sel PLSSLINE.AAT 
+sel TMPPLSSL.AAT 
 MOVE 'OTHER' TO SOURCETYPE
 MOVE 'OLDTAXMAPS' TO SOURCE 
 CALC RELIACODE = 0
@@ -63,7 +63,7 @@ Q STOP
 
 &type -- 5. DROP ITEMS NOT USED ***************************
 
-DROPITEM PLSSLINE.AAT PLSSLINE.AAT               
+DROPITEM TMPPLSSL.AAT TMPPLSSL.AAT               
 TMPLINE#
 TMPLINE-ID
 ANGLE

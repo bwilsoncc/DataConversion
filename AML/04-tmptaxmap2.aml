@@ -3,7 +3,7 @@
 /* Args: NONE
 /*
 /* Input:
-/*    taxbound
+/*    tmptaxbound
 /*    tmptaxmap1
 /*    annostd.lut - a table telling what font, fontsize, bold, italic to use for each level and scale
 /*
@@ -12,7 +12,7 @@
 /*
 &WATCH 04-tmptaxmap2.wat &COMMANDS
 
-&do name &list taxbound, tmptaxmap1
+&do name &list tmptaxbound, tmptaxmap1
   &if ^ [exists %name% -cover] &then &do 
     &type Missing %name%
     &return ; &return
@@ -83,10 +83,10 @@ Q
 /* and then turned into an actual point featureclass by this command
 build IGDS point
 
-/* This effectively copies the attributes from the taxbound points
+/* This effectively copies the attributes from the tmptaxbound points
 /* to the igds points and put them in tbigds
 /*  format: intersect in_cover intersect_cover out_cover POLY|LINE|POINT tolerance JOIN|NOJOIN
-INTERSECT igds taxbound tbigds POINT 
+INTERSECT igds tmptaxbound tbigds POINT 
 
 &type -- 4. Copy the attributes we need from TBIGDS to tmptaxmap2 annotation
 /* We do this by setting up a "RELATE" between the TBIGDS point attributes and the tmptaxmap2 annotation attributes

@@ -6,11 +6,11 @@
 /*   tmptaxmap2
 /*
 /* Output:
-/*   cartolin
+/*   tmpcartol
 /*
 &WATCH 06-cartolines.wat
 
-&if [exists cartolin -cover] &then kill cartolin all
+&if [exists tmpcartol -cover] &then kill tmpcartol all
 &if [exists tmpline -cover] &then kill tmpline all 
 
 &if ^ [exists taxbound -cover] &then &do 
@@ -20,7 +20,7 @@
   &return ; &return 
 &end 
 
-&type -- 1. Select just cartolines from taxmap  ************************
+&type -- 1. Select just carto lines from taxmap  ************************
 
 reselect tmptaxmap2 tmpline line 
 res taxmaptype > 100 OR taxmaptype = 34 
@@ -30,19 +30,19 @@ n
 
 &type -- 2. Intersect with taxbound to get map number  ************************
 
-intersect tmpline taxbound cartolin line 
+intersect tmpline taxbound tmpcartol line 
 kill tmpline all
 
 &type -- 3. add needed items ************************ 
 
-additem cartolin.aat cartolin.aat linetype 3 3 i 
+additem tmpcartol.aat tmpcartol.aat linetype 3 3 i 
 
 &type -- 4. assign fields as needed ************************
 
 &data arc info 
 arc
 /********************************** Assign values to all 
-sel CARTOLIN.AAT 
+sel TMPCARTOL.AAT 
 ASEL
 /******************************* SET LINE TYPES 
 CALC LINETYPE = 100 
@@ -74,7 +74,7 @@ Q STOP
 
 &type -- 5. DROP ITEMS NOT USED ***************************
 
-DROPITEM CARTOLIN.AAT CARTOLIN.AAT
+DROPITEM TMPCARTOL.AAT TMPCARTOL.AAT
 TMPLINE#
 TMPLINE-ID
 ANGLE

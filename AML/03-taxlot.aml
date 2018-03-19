@@ -15,9 +15,10 @@
 /*   tmptaxmap1
 /* 
 /* Output:
-/*   taxlot   -- arc, point, label pt feature classes
-/*   taxlotpt -- the points from the taxlot coverage's label fc
-
+/*   tmptaxlot   -- line and label pt feature classes
+/*   tmptaxlotpt -- will be used to define attributes in final polygons
+/*                  this will just be a copy of tmptaxlot.label
+/*
 &args source
 /* For example, &r 03-maketaxlot.aml %PROJECTHOME%/Source/t4-6
 
@@ -32,7 +33,7 @@
 
 &type -- 1. Delete coverages that will be created
 
-&do name &list taxlot, taxlotpt
+&do name &list tmptaxlot, tmptaxlotpt
   &if [exists %name% -cover] &then kill %name% all
 &end
 
@@ -40,76 +41,78 @@
 
 PRECISION DOUBLE DOUBLE 
 
-create taxlot 
-build taxlot line
-build taxlot point 
-tolerance taxlot FUZZY .01 
+create tmptaxlot 
+build tmptaxlot line
+build tmptaxlot point 
+tolerance tmptaxlot FUZZY .01 
 
 &type -- 3. Add point attribute fields
 
-additem taxlot.pat taxlot.pat COUNTY,2,2,I 
-additem taxlot.pat taxlot.pat TOWN,2,2,I 
-additem taxlot.pat taxlot.pat TOWNPART, 3,3,N,2
-additem taxlot.pat taxlot.pat TOWNDIR,1,1,c 
-additem taxlot.pat taxlot.pat RANGE,2,2,I                          
-additem taxlot.pat taxlot.pat RANGEPART,3,3,n,2              
-additem taxlot.pat taxlot.pat RANGEDIR ,1,1,c  
-additem taxlot.pat taxlot.pat SECTION,2,2,I             
-additem taxlot.pat taxlot.pat SECNUMBER,2,2,I  
-additem taxlot.pat taxlot.pat QTR, 2,2 ,C             
-additem taxlot.pat taxlot.pat STQTR,1,1,c                            
-additem taxlot.pat taxlot.pat QTRQTR,1,1,c                    
-additem taxlot.pat taxlot.pat ANOMALY,2,2,c                
-additem taxlot.pat taxlot.pat MAPSUFTYPE ,1,1,c         
-additem taxlot.pat taxlot.pat MAPSUFNUM,4,4,I            
-additem taxlot.pat taxlot.pat MAPNUMBER,20,20,c
-additem taxlot.pat taxlot.pat MAPNUM,10,10,C 
-additem taxlot.pat taxlot.pat ORMAPNUM,24,24,c        
-additem taxlot.pat taxlot.pat TAXLOT,5,5,c                       
-additem taxlot.pat taxlot.pat SPECIALINT,1,1,c               
-additem taxlot.pat taxlot.pat MAPTAXLOT ,25,25,c          
-additem taxlot.pat taxlot.pat ORTAXLOT,29,29,c  
-additem taxlot.pat taxlot.pat TAXLOTFEET,8,8,I 
-additem taxlot.pat taxlot.pat TAXLOTACRE,8,8,N,2 
-additem taxlot.pat taxlot.pat MAPACRES,8,8,N,2 
-additem taxlot.pat taxlot.pat RELIACODE,2,2,I 
-additem taxlot.pat taxlot.pat AUTODATE,8,10,D
-additem taxlot.pat taxlot.pat AUTOMETHOD,3,3,C 
-additem taxlot.pat taxlot.pat AUTOWHO,30,30,C 
-additem taxlot.pat taxlot.pat TAXMAPKEY,12,12,C 
-additem taxlot.pat taxlot.pat LEGACRES1 9 9 N 2 
+additem tmptaxlot.pat tmptaxlot.pat COUNTY,2,2,I 
+additem tmptaxlot.pat tmptaxlot.pat TOWN,2,2,I 
+additem tmptaxlot.pat tmptaxlot.pat TOWNPART, 3,3,N,2
+additem tmptaxlot.pat tmptaxlot.pat TOWNDIR,1,1,c 
+additem tmptaxlot.pat tmptaxlot.pat RANGE,2,2,I                          
+additem tmptaxlot.pat tmptaxlot.pat RANGEPART,3,3,n,2              
+additem tmptaxlot.pat tmptaxlot.pat RANGEDIR ,1,1,c  
+additem tmptaxlot.pat tmptaxlot.pat SECTION,2,2,I             
+additem tmptaxlot.pat tmptaxlot.pat SECNUMBER,2,2,I  
+additem tmptaxlot.pat tmptaxlot.pat QTR, 2,2 ,C             
+additem tmptaxlot.pat tmptaxlot.pat STQTR,1,1,c                            
+additem tmptaxlot.pat tmptaxlot.pat QTRQTR,1,1,c                    
+additem tmptaxlot.pat tmptaxlot.pat ANOMALY,2,2,c                
+additem tmptaxlot.pat tmptaxlot.pat MAPSUFTYPE ,1,1,c         
+additem tmptaxlot.pat tmptaxlot.pat MAPSUFNUM,4,4,I            
+additem tmptaxlot.pat tmptaxlot.pat MAPNUMBER,20,20,c
+additem tmptaxlot.pat tmptaxlot.pat MAPNUM,10,10,C 
+additem tmptaxlot.pat tmptaxlot.pat ORMAPNUM,24,24,c        
+additem tmptaxlot.pat tmptaxlot.pat TAXLOT,5,5,c                       
+additem tmptaxlot.pat tmptaxlot.pat SPECIALINT,1,1,c               
+additem tmptaxlot.pat tmptaxlot.pat MAPTAXLOT ,25,25,c          
+additem tmptaxlot.pat tmptaxlot.pat ORTAXLOT,29,29,c  
+additem tmptaxlot.pat tmptaxlot.pat TAXLOTFEET,8,8,I 
+additem tmptaxlot.pat tmptaxlot.pat TAXLOTACRE,8,8,N,2 
+additem tmptaxlot.pat tmptaxlot.pat MAPACRES,8,8,N,2 
+additem tmptaxlot.pat tmptaxlot.pat RELIACODE,2,2,I 
+additem tmptaxlot.pat tmptaxlot.pat AUTODATE,8,10,D
+additem tmptaxlot.pat tmptaxlot.pat AUTOMETHOD,3,3,C 
+additem tmptaxlot.pat tmptaxlot.pat AUTOWHO,30,30,C 
+additem tmptaxlot.pat tmptaxlot.pat TAXMAPKEY,12,12,C 
+additem tmptaxlot.pat tmptaxlot.pat LEGACRES1 9 9 N 2 
 
-additem taxlot.pat taxlot.pat TAXMAPTYPE,3,3,I 
-additem taxlot.pat taxlot.pat AUTO-WHO,3,3,C 
-additem taxlot.pat taxlot.pat AUTO-METHOD,3,3,C 
-additem taxlot.pat taxlot.pat AUTO-DATE,8,10,D
+additem tmptaxlot.pat tmptaxlot.pat TAXMAPTYPE,3,3,I 
+additem tmptaxlot.pat tmptaxlot.pat AUTO-WHO,3,3,C 
+additem tmptaxlot.pat tmptaxlot.pat AUTO-METHOD,3,3,C 
+additem tmptaxlot.pat tmptaxlot.pat AUTO-DATE,8,10,D
 
 &type -- Add taxlot line attributes
 
-additem taxlot.aat taxlot.aat TAXMAPTYPE,3,3,I 
-additem taxlot.aat taxlot.aat AUTO-WHO,3,3,C 
-additem taxlot.aat taxlot.aat AUTO-METHOD,3,3,C 
-additem taxlot.aat taxlot.aat AUTO-DATE,8,10,D 
-additem taxlot.aat taxlot.aat AUTO-REL,1,1,I 
+additem tmptaxlot.aat tmptaxlot.aat TAXMAPTYPE,3,3,I 
+additem tmptaxlot.aat tmptaxlot.aat AUTO-WHO,3,3,C 
+additem tmptaxlot.aat tmptaxlot.aat AUTO-METHOD,3,3,C 
+additem tmptaxlot.aat tmptaxlot.aat AUTO-DATE,8,10,D 
+additem tmptaxlot.aat tmptaxlot.aat AUTO-REL,1,1,I 
  
-additem taxlot.aat taxlot.aat LINETYPE,3,3,I
-additem taxlot.aat taxlot.aat DIRECTION,12,12,C 
-additem taxlot.aat taxlot.aat DISTANCE,10,10,C
-additem taxlot.aat taxlot.aat ANGLE,10,10,C
-additem taxlot.aat taxlot.aat DELTA,10,10,C
-additem taxlot.aat taxlot.aat RADIUS,10,10,C 
-additem taxlot.aat taxlot.aat RADIUS2,10,10,C
-additem taxlot.aat taxlot.aat TANGENT,10,10,C 
-additem taxlot.aat taxlot.aat TANGENT2,10,10,C
-additem taxlot.aat taxlot.aat ARCLENGTH,10,10,C 
-additem taxlot.aat taxlot.aat SIDE,1,1,C
-additem taxlot.aat taxlot.aat SOURCE,20,20,C
-additem taxlot.aat taxlot.aat SOURCETYPE,20,20,C
-additem taxlot.aat taxlot.aat RELIACODE,2,2,I 
-additem taxlot.aat taxlot.aat AUTODATE,8,10,D
-additem taxlot.aat taxlot.aat AUTOMETHOD,3,3,C 
-additem taxlot.aat taxlot.aat AUTOWHO,30,30,C 
+additem tmptaxlot.aat tmptaxlot.aat LINETYPE,3,3,I
+additem tmptaxlot.aat tmptaxlot.aat DIRECTION,12,12,C 
+additem tmptaxlot.aat tmptaxlot.aat DISTANCE,10,10,C
+additem tmptaxlot.aat tmptaxlot.aat ANGLE,10,10,C
+additem tmptaxlot.aat tmptaxlot.aat DELTA,10,10,C
+additem tmptaxlot.aat tmptaxlot.aat RADIUS,10,10,C 
+additem tmptaxlot.aat tmptaxlot.aat RADIUS2,10,10,C
+additem tmptaxlot.aat tmptaxlot.aat TANGENT,10,10,C 
+additem tmptaxlot.aat tmptaxlot.aat TANGENT2,10,10,C
+additem tmptaxlot.aat tmptaxlot.aat ARCLENGTH,10,10,C 
+additem tmptaxlot.aat tmptaxlot.aat SIDE,1,1,C
+additem tmptaxlot.aat tmptaxlot.aat SOURCE,20,20,C
+additem tmptaxlot.aat tmptaxlot.aat SOURCETYPE,20,20,C
+additem tmptaxlot.aat tmptaxlot.aat RELIACODE,2,2,I 
+additem tmptaxlot.aat tmptaxlot.aat AUTODATE,8,10,D
+additem tmptaxlot.aat tmptaxlot.aat AUTOMETHOD,3,3,C 
+additem tmptaxlot.aat tmptaxlot.aat AUTOWHO,30,30,C 
 
+/* At this point if I do "dir feat tmptaxlot" it shows
+/* point, arc, node but no polygon
 
 &type -- 4. Calc values 
 
@@ -128,7 +131,7 @@ ef arc
 /* I don't know why taxmaptype 51 is in here, it seems wrong to me
 sel taxmaptype = 8 or taxmaptype = 14 or taxmaptype = 32 or taxmaptype = 51
 
-put taxlot
+put tmptaxlot
 /* Coverage already exists. Do you want to append?  (we just created it up above so this is okay)
 Y
 /* I get a warning about the arc attributes not matching,
@@ -136,34 +139,36 @@ Y
 
 /* ************************************************************************
 /* Copy the "label" point fc
-/* Since there is no label fc in "taxlot" the warning about attributes not matching is specious.
+/* Since there is no label fc in "tmptaxlot" the warning about attributes not matching is specious.
 
 ec %source%/taxlot
 ef label
 
 sel taxmaptype = 31          /* BRINGING TAXLOT LABELS FROM TAXLOT COVER
-put taxlot                   /* TO ENSURE WE GET MAP NUMBER & TAXLOT KEY INFO RIGHT
+put tmptaxlot                   /* TO ENSURE WE GET MAP NUMBER & TAXLOT KEY INFO RIGHT
 /* "...TAXLOT already exists, do you want to append?"
 /* The coverage exists, but there is no label fc until this runs
 Y
 
 q
 
-clean taxlot # 10 .05
+/* "CLEAN" builds the polygons, that should be OBVIOUS to ANYONE!!!
+/* POINT is gone now we have POLYGON
+
+clean tmptaxlot # 10 .05
 
 /* Recreate taxlot key - IN THE POLK KEY THE TAXLOT IS RIGHT JUSTIFIED... 
 
 &data arc info 
 arc
-SEL TAXLOT.PAT 
-CONCAT MAPTAXLOT FROM TOWN,RANGE,SECTION,QTR,TAXLOT               /* Polk Taxlot key
+SEL TMPTAXLOT.PAT 
+CONCAT MAPTAXLOT FROM TOWN,RANGE,SECTION,QTR,TAXLOT               /* Taxlot key
 Q STOP
 &END 
 
-/***********  Dean made following update so maptaxlot is consistent with ORCATS - Dean 10/17 *************************/ 
+/*****  Dean made following update so maptaxlot is consistent with ORCATS - Dean 10/17 ******** 
 arcedit
-
-ec taxlot 
+ec tmptaxlot 
 ef label  
 
 sel TOWN < 10                         /* GET RID OF LEADING BLANK IN TOWNSHIP < 10 
@@ -185,7 +190,7 @@ Q
 &type -- 5. Calculate the values for taxlot label fc
 
 arcedit 
-ec taxlot
+ec tmptaxlot
 ef label
 sel all
 change TAXLOT C/ //G                           /* Strip spaces out of field
@@ -194,7 +199,7 @@ q
 
 &DATA ARC INFO
 ARC
-SEL TAXLOT.AAT                                  /* CALC LINEWORK 
+SEL TMPTAXLOT.AAT                                  /* CALC LINEWORK 
 MOVE ANGLE TO DIRECTION
 CALC LINETYPE = TAXMAPTYPE 
 CALC AUTODATE = AUTO-DATE
@@ -206,7 +211,7 @@ MOVE 'OLDTAXMAPS' TO SOURCE
 REM RES TAXMAPTYPE = 62                         /* Dean added this recently, don't know why
 REM CALC LINETYPE = 32                          /* Dean added this recently, don't know why
 
-SEL TAXLOT.PAT                                  /* CALC POLYGONS 
+SEL TMPTAXLOT.PAT                                 /* Set polygon attributes
 
 CALC COUNTY = 4                                /* Assign County number! 
 MOVE 'N' TO TOWNDIR 
@@ -247,7 +252,7 @@ Q STOP
 &type -- TOWN and RANGE were blank filled above and we need zero fill
 
 arcedit
-ec taxlot 
+ec tmptaxlot 
 ef label 
 sel all
 change ORMAPNUM C/ /0/G 
@@ -255,27 +260,22 @@ change ORTAXLOT C/ /0/G
 save
 q 
 
-dropitem taxlot.pat taxlot.pat R MAPNUM SECTION OQTR TAXMAPKEY LEGACRES1 TAXMAPTYPE
-dropitem taxlot.pat taxlot.pat CQTR CQTRQTR
-dropitem taxlot.pat taxlot.pat AUTO-WHO AUTO-METHOD AUTO-DATE
-dropitem taxlot.aat taxlot.aat TAXMAPTYPE ANGLE
+dropitem tmptaxlot.pat tmptaxlot.pat R MAPNUM SECTION OQTR TAXMAPKEY LEGACRES1 TAXMAPTYPE
+dropitem tmptaxlot.pat tmptaxlot.pat CQTR CQTRQTR
+dropitem tmptaxlot.pat tmptaxlot.pat AUTO-WHO AUTO-METHOD AUTO-DATE
 
-/* dropitem taxlot.aat taxlot.aat AUTO-WHO AUTO-METHOD AUTO-DATE
+dropitem tmptaxlot.aat tmptaxlot.aat TAXMAPTYPE ANGLE
 
-&type -- Copy the points for taxlot labels to taxlotpt
+/* dropitem tmptaxlot.aat tmptaxlot.aat AUTO-WHO AUTO-METHOD AUTO-DATE
+
+&type -- Copy the points for tmptaxlot labels to tmptaxlotpt
 
 arcedit 
-ec taxlot
+ec tmptaxlot
 ef label 
 sel all
-put taxlotpt 
+put tmptaxlotpt 
 quit 
-
-/* I don't know why the arcedit step did not already do this... 
-/* Yes actually I just checked and
-/* pretty sure it does nothing at all.
-/*
-/*build taxlotpt point
 
 &type -- That's all! --
 &RETURN

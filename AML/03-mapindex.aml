@@ -4,10 +4,10 @@
 /* Args: None
 /*
 /* Input:
-/*   taxbound    coverage from previous step
+/*   tmptaxbound    coverage from previous step
 /*
 /* Output:
-/*   mapindex    taxmap with a bunch of fields dropped and MAPSCALE added and filled in
+/*   tmpmapindex    taxmap with a bunch of fields dropped and MAPSCALE added and filled in
 
 /********************************************************************************
 &args source
@@ -19,14 +19,14 @@ DISPLAY 9999 1
 /***************************************************************************
 &type -- 1. delete coverages that will be created
 
-&do name &list mapindex
+&do name &list tmpmapindex
   &if [exists %name% -cover] &then kill %name% all
 &end
 
 &type -- 2. Drop un-needed point attributes
 
-COPY TAXBOUND MAPINDEX 
-DROPITEM MAPINDEX.PAT MAPINDEX.PAT 
+COPY TMPTAXBOUND TMPMAPINDEX 
+DROPITEM TMPMAPINDEX.PAT TMPMAPINDEX.PAT 
 IGDS-GGNO
 MAPNUM
 MAPSUFTYPE
@@ -54,17 +54,17 @@ MQQ
 Y
 Y
 
-&type --  Remove all the attributes from mapindex polygons, then add a field called "CURRENT" and set it to "Y"
+&type --  Remove all the attributes from tmpmapindex polygons, then add a field called "CURRENT" and set it to "Y"
 /*
 /* ** This seems pointless since we don't use the polygons at all
 
-&s x = [delete mapindex.aat -info]
-build mapindex line
-additem mapindex.aat mapindex.aat current 1 1 c 
+&s x = [delete tmpmapindex.aat -info]
+build tmpmapindex line
+additem tmpmapindex.aat tmpmapindex.aat current 1 1 c 
 
 &data arc info
 arc
-SEL MAPINDEX.AAT
+SEL TMPMAPINDEX.AAT
 MOVE 'Y' TO CURRENT
 Q STOP
 &END 

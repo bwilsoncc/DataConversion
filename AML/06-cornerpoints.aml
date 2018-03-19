@@ -2,19 +2,19 @@
 /* Creates coverages of corresponding feature class-> corner points
 /* 
 /* Input:
-/*   taxbound
+/*   tmptaxbound
 /*   tmptaxmap2
 /*   DLCMASTER from AnnoGenCov
 /*   xxxyyy.lut from K:   I have no idea what this is for, I asked Dean but I don't remember the answer :-)
 /*
 /* Output:
-/*   corner       annotation and points
+/*   tmpcorner       annotation and points
 /*   xxxyyy.lut   gets copied into our workspace
 /*
 &WATCH 06-cornerpoints.wat
 
 &if [exists tmppt -cover] &then kill tmppt all 
-&if [exists corner -cover] &then kill corner all 
+&if [exists tmpcorner -cover] &then kill tmpcorner all 
 &s x = [delete DLCMASTER -INFO] 
 &s x = [delete xxxyyy.lut -info] 
 
@@ -33,9 +33,9 @@ COPYINFO K:\taxmaped\apps\biged2\lookupclatsop\INFO!ARC!XXXYYY.LUT
 /*   &return ; &return 
 /* &end 
 
-&if ^ [exists taxbound -cover] &then &do 
+&if ^ [exists tmptaxbound -cover] &then &do 
   &message &popup 
-  &type 'ERROR - MISSING TAXBOUND'
+  &type 'ERROR - MISSING TMPTAXBOUND'
   &message &on
   &return ; &return 
 &end 
@@ -54,31 +54,31 @@ OR TAXMAPTYPE = 48
 n
 n
 
-&type -- 2. Intersect with taxbound to get map number  ************************
-intersect tmppt taxbound corner  point
+&type -- 2. Intersect with tmptaxbound to get map number  ************************
+intersect tmppt tmptaxbound tmpcorner  point
 kill tmppt all
 
 &type -- 3. Add needed items ************************ 
 
-additem corner.Pat corner.Pat CornerSymbol 3 3 i 
-additem corner.Pat corner.Pat CornerDesc 64 64 c 
-additem corner.Pat corner.Pat ControlType 3 3 i 
-additem corner.Pat corner.Pat CommonName 32 32 c 
-additem corner.Pat corner.Pat GCDB 10 10 c 
-additem corner.Pat corner.Pat Easting 8 18 F 5 
-additem corner.Pat corner.Pat Northing 8 18 F 5 
-additem corner.Pat corner.Pat Latitude 8 18 F 5 
-additem corner.Pat corner.Pat Longitude 8 18 F 5 
+additem tmpcorner.Pat tmpcorner.Pat CornerSymbol 3 3 i 
+additem tmpcorner.Pat tmpcorner.Pat CornerDesc 64 64 c 
+additem tmpcorner.Pat tmpcorner.Pat ControlType 3 3 i 
+additem tmpcorner.Pat tmpcorner.Pat CommonName 32 32 c 
+additem tmpcorner.Pat tmpcorner.Pat GCDB 10 10 c 
+additem tmpcorner.Pat tmpcorner.Pat Easting 8 18 F 5 
+additem tmpcorner.Pat tmpcorner.Pat Northing 8 18 F 5 
+additem tmpcorner.Pat tmpcorner.Pat Latitude 8 18 F 5 
+additem tmpcorner.Pat tmpcorner.Pat Longitude 8 18 F 5 
 
-additem corner.Pat corner.Pat source 20 20 c 
-additem corner.Pat corner.Pat sourcetype 20 20 c 
+additem tmpcorner.Pat tmpcorner.Pat source 20 20 c 
+additem tmpcorner.Pat tmpcorner.Pat sourcetype 20 20 c 
 
 &type -- 4. Assign fields as needed ************************
 
 &data arc info 
 arc
 /********************************** Assign values to all 
-sel CORNER.PAT
+sel TMPCORNER.PAT
 MOVE 'OTHER' TO SOURCETYPE
 MOVE 'OLDTAXMAPS' TO SOURCE 
 CALC RELIACODE = 0
@@ -114,7 +114,7 @@ Q STOP
 
 &DATA ARC INFO
 ARC
-SEL CORNER.PAT
+SEL TMPCORNER.PAT
 RES POINTNAME CN '0' AND POINTNAME NC 'd' AND POINTNAME NC 'c'and POINTNAME NC 'D' and POINTNAME NC 'S' 
 MOVE POINTNAME TO GCDB 
 Q STOP
@@ -123,7 +123,7 @@ Q STOP
 
 &type -- 5. DROP ITEMS NOT USED ***************************
 
-DROPITEM CORNER.PAT CORNER.PAT 
+DROPITEM TMPCORNER.PAT TMPCORNER.PAT 
 TMPPT#
 TMPPT-ID
 IGDS-GGNO
@@ -144,8 +144,8 @@ MAPACRES
 GEOTRANSNO
 TAXMAPTYPE
 TAXMAPSYM
-TAXBOUND#
-TAXBOUND-ID
+TMPTAXBOUND#
+TMPTAXBOUND-ID
 ORMAPNUM
 MAPSUFTYPE
 MAPSUFNUM

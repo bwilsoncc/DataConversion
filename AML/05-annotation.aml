@@ -6,32 +6,32 @@
 /*   tmptaxmap2 anno.igds
 /*
 /* Output:
-/*   the named coverage
+/*   annotation in tmpbearingan tmptaxlotan tmptaxcodan tmpseemapan tmptaxmapan
 /* 
 
 &WATCH 05-annotation.wat
 
 /* I guess .arc is not getting run when running from Python? Weird.
-/* hence
+/* hence set the environment variables here:
 &s PROJECTHOME = C:/GeoModel/Clatsop
 &AMLPATH %PROJECTHOME%/AML
 &type PROJECTHOME = %PROJECTHOME%
 &type AMLPATH = [show &amlpath]
 
 &type BEARING AND DISTANCE
-&r makeanno bearingan SYMBOL = 34
+&r makeanno taxcodanno tmpbearingan SYMBOL = 34
 
 &type TAXLOT ANNOTATION
-&r makeanno taxlotan SYMBOL = 37
+&r makeanno taxcodanno tmptaxlotan SYMBOL = 37
 
 &type TAXCODE ANNOTATION
-&r makeanno taxcodan SYMBOL = 54
+&r makeanno taxcodanno tmptaxcodan SYMBOL = 54
 
 &type "SEE MAP" ANNOTATION
-&r makeanno seemapan SYMBOL = 62
+&r makeanno taxcodanno tmpseemapan SYMBOL = 62
 
 /* (Catch everything else...)
 &type TAXMAP ANNOTATION
-&r makeanno taxmapan SYMBOL <> 34 AND SYMBOL <> 37 AND SYMBOL <> 54 AND SYMBOL <> 62
+&r makeanno taxmapancc tmptaxmapan SYMBOL <> 34 AND SYMBOL <> 37 AND SYMBOL <> 54 AND SYMBOL <> 62
 
 &return

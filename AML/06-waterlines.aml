@@ -5,22 +5,22 @@
 /* 
 /* Input:
 /*   tmptaxmap2  lines are copied from here
-/*   taxbound    lines are copied from here
+/*   tmptaxbound    lines are copied from here
 /* 
 /* Output:
-/*   waterlin    will be deleted and recreated
+/*   tmpwaterl    will be deleted and recreated
 /*   The coverage will have annotation.igds but we don't use it so don't worry about the extra anno in there.
 
 &WATCH 06-waterlines.wat
 
-&if ^ [exists taxbound -cover] &then &do 
+&if ^ [exists tmptaxbound -cover] &then &do 
   &message &popup 
-  &type 'ERROR - MISSING TAXBOUND'
+  &type 'ERROR - MISSING TMPTAXBOUND'
   &message &on
   &return ; &return 
 &end 
 
-&do name &list tmpline, waterlin
+&do name &list tmpline, tmpwaterl
   &if [exists %name% -cover] &then kill %name% all
 &end
 
@@ -32,24 +32,24 @@ res taxmaptype = 22 OR taxmaptype = 24 or taxmaptype = 26 or taxmaptype = 28
 n
 n
 
-&type -- 2. Intersect with taxbound to get map number  ************************
+&type -- 2. Intersect with tmptaxbound to get map number  ************************
 
-intersect tmpline taxbound waterlin line 
+intersect tmpline tmptaxbound tmpwaterl line 
 kill tmpline all
 
 &type -- 3. add needed items ************************ 
 
-additem waterlin.aat waterlin.aat watername 64 64 c 
-additem waterlin.aat waterlin.aat linetype 3 3 i 
-additem waterlin.aat waterlin.aat source 20 20 c 
-additem waterlin.aat waterlin.aat sourcetype 20 20 c 
+additem tmpwaterl.aat tmpwaterl.aat watername 64 64 c 
+additem tmpwaterl.aat tmpwaterl.aat linetype 3 3 i 
+additem tmpwaterl.aat tmpwaterl.aat source 20 20 c 
+additem tmpwaterl.aat tmpwaterl.aat sourcetype 20 20 c 
 
 &type -- 4. assign fields as needed ************************
 
 &data arc info 
 arc
 /********************************** Assign values to all 
-sel WATERLIN.AAT 
+sel TMPWATERL.AAT 
 MOVE 'OTHER' TO SOURCETYPE 
 MOVE 'OLD TAXMAPS' TO SOURCE 
 /******************************* SET LINE TYPES 
@@ -60,7 +60,7 @@ Q STOP
 
 &type -- 5. DROP ITEMS NOT USED ***************************
 
-DROPITEM WATERLIN.AAT WATERLIN.AAT               
+DROPITEM TMPWATERL.AAT TMPWATERL.AAT               
 TMPLINE#
 TMPLINE-ID
 ANGLE
@@ -75,10 +75,10 @@ TANGENT2
 TAXMAPSYM
 TAXMAPTYPE
 GEOTRANSNO
-TAXBOUND#
+TMPTAXBOUND#
 AREA
 PERIMETER
-TAXBOUND-ID
+TMPTAXBOUND-ID
 IGDS-GGNO
 MAPNUM
 TOWN

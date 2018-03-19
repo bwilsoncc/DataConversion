@@ -1,6 +1,7 @@
 /* Generate a coverage containing an annotation feature class
 /*
 /* Args:
+/*   TMPL8      Name of a template file
 /*   COVERAGE   Name of coverage (a string)
 /*   SELECTION  A selection expression (a string) for example: $SYMBOL = 62
 /*   (this expression can be complex; eg: $SYMBOL <> 37 AND $SYMBOL <> 54 AND $SYMBOL <> 62)
@@ -11,11 +12,10 @@
 /* Output:
 /*   the named coverage
 /* 
-&args COVERAGE QUOTEDSELECTION:REST
-&s SELECTION = [unquote %QUOTEDSELECTION%]
-&s TEMPLATE = C:/GeoModel/Clatsop/AnnoTemplateCoverages/taxmapanno
+&args TMPL8 COVERAGE QUOTEDSELECTION:REST
 
-&echo &on
+&s SELECTION = [unquote %QUOTEDSELECTION%]
+&s TEMPLATE = C:/GeoModel/Clatsop/AnnoTemplateCoverages/%TMPL8%
 
 &type COVERAGE  = %COVERAGE%
 &type SELECTION = %SELECTION%
@@ -27,8 +27,8 @@
   &end
 &end
 
-/* &s TMPCOVERAGE = tmp%COVERAGE%
-/* &if [exists %TMPCOVERAGE% -cover] &then kill %TMPCOVERAGE% all
+&s TMPCOVERAGE = tmp%COVERAGE%
+&if [exists %TMPCOVERAGE% -cover] &then kill %TMPCOVERAGE% all
 &if [exists %COVERAGE% -cover] &then kill %COVERAGE% all
 
 arcedit
@@ -38,12 +38,13 @@ ef anno.igds
 /* Some of our data has the symbol set wrong (38?) but the text says SEE MAP so I try to catch that.
 SEL %SELECTION%
 &if [show number select] > 0 &then &do
-  put %COVERAGE%
+put %TMPCOVERAGE%
 &end
+
 q
 
-&if [exists %COVERAGE% -cover] = .false. &then &do
-  &type No symbol matches for %COVERAGE% %SELECTION%
+&if [exists %TMPCOVERAGE% -cover] = .false. &then &do
+  &type %TMPCOVERAGE% does not exist
   &return ; &return
 &end
 
@@ -54,13 +55,13 @@ q
 /* I don't think I even need to do this, since I just use
 /* mapscale directly to determine if anno shows or not at a given scale.
 
-&type -- Assign new LEVEL based on scale, but DON'T change the symbol.
+&type -- Assign new LEVEL based on scale
 
 /* Not even sure I need to do this, since I just use mapscale
 /* directly in ArcMap to determine if anno shows or not at a given scale.
 
 arcedit 
-ec %COVERAGE%
+ec %TMPCOVERAGE%
 ef anno.igds
 
 /* All the large scales get tossed into one level, 0.
@@ -112,7 +113,7 @@ q
 /* ========================================================================
 
 &type Drop unwanted fields
-dropitem %COVERAGE%.tatigds %COVERAGE%.tatigds 
+dropitem %TMPCOVERAGE%.tatigds %TMPCOVERAGE%.tatigds 
 X
 Y
 OFFSETX
@@ -132,15 +133,17 @@ Y
 /* Now to get the proper annotation classes,
 /* create the final anno coverage by appending the template and our data
 
-/* arcedit
-/* ec %TEMPLATE%
-/* ef anno.igds
-/* get %TMPCOVERAGE% 
-/* put %COVERAGE%
-/* Q
-/* &if [exists %TMPCOVERAGE% -cover] &then kill %TMPCOVERAGE% all
+copy %TEMPLATE% %COVERAGE%
+arcedit
+ec %COVERAGE%
+ef anno.igds
+get %TMPCOVERAGE% 
+save
+quit yes
 
-/* We are done with this stupid hack
+&if [exists %TMPCOVERAGE% -cover] &then kill %TMPCOVERAGE% all
+
+/* We are done with this stupid hack so get rid of the duplicated field
 dropitem %COVERAGE%.tatigds %COVERAGE%.tatigds SYMBOL
 
 &type Built %COVERAGE% annotation!

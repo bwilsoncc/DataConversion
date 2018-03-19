@@ -1,5 +1,5 @@
 /* This script is IDEMPOTENT,
-/* it does not change tmptaxmap1 but it creates taxcode
+/* it does not change tmptaxmap1 but it creates tmptaxcode
 /*
 /* Args:   NONE
 /*
@@ -7,7 +7,7 @@
 /*   tmptaxmap1
 /*
 /* Output:
-/*   taxcode
+/*   tmptaxcode
 
 &WATCH 03-taxcode.wat
 
@@ -20,7 +20,7 @@
 
 &type -- 1. Delete coverages that will be created here
 
-&do name &list taxcode
+&do name &list tmptaxcode
   &if [exists %name% -cover] &then kill %name% all
 &end
 
@@ -44,7 +44,7 @@ ef arc
 /* transferfeature arc
 /* transferitems PAGENAME MAPSCALE RELIACODE AUTODATE AUTOMETHOD AUTOWHO
 sel taxmaptype = 51 or taxmaptype = 53
-put taxcode
+put tmptaxcode
 
 /* Copy labels from tmptaxmap1
 ef label
@@ -52,44 +52,40 @@ ef label
 /* transferfeature label
 /* transferitems PAGENAME MAPSCALE
 sel taxmaptype = 54
-put taxcode
+put tmptaxcode
 
 q
 
-clean taxcode # 10 .05
-
-/* I removed the dissolve to python, it seems to strip attributes here
-/* dissolve tmptaxcode taxcode taxcode
-/* kill tmptaxcode all
+clean tmptaxcode # 10 .05
 
 &DATA ARC INFO
 ARC
-SEL TAXCODE.PAT
-CALC TAXCODE-ID = TAXCODE# 
+SEL TMPTAXCODE.PAT
+CALC TMPTAXCODE-ID = TMPTAXCODE# 
 Q STOP
 &END
 
 /* Update USERID, not sure what for.
-IDEDIT TAXCODE 
+IDEDIT TMPTAXCODE 
 
 &type -- 3. Add attributes to points
 /* AUTO and friends are already there and populated, using TRANSFERITEMS above.
 
-additem taxcode.pat taxcode.pat county 3 3 i 
-additem taxcode.pat taxcode.pat otaxcode 8 8 c 
-additem taxcode.pat taxcode.pat source 20 20 c 
-additem taxcode.pat taxcode.pat YearCreated 8 10 d 
-/* additem taxcode.pat taxcode.pat ReliaCode 2 2 i 
-/* additem taxcode.pat taxcode.pat Autodate 8 10 d 
-/* additem taxcode.pat taxcode.pat AutoMethod 3 3 c 
-/* additem taxcode.pat taxcode.pat AutoWho 30 30 c 
-additem taxcode.pat taxcode.pat TAXCODEID 8 8 I
+additem tmptaxcode.pat tmptaxcode.pat county 3 3 i 
+additem tmptaxcode.pat tmptaxcode.pat otaxcode 8 8 c 
+additem tmptaxcode.pat tmptaxcode.pat source 20 20 c 
+additem tmptaxcode.pat tmptaxcode.pat YearCreated 8 10 d 
+/* additem tmptaxcode.pat tmptaxcode.pat ReliaCode 2 2 i 
+/* additem tmptaxcode.pat tmptaxcode.pat Autodate 8 10 d 
+/* additem tmptaxcode.pat tmptaxcode.pat AutoMethod 3 3 c 
+/* additem tmptaxcode.pat tmptaxcode.pat AutoWho 30 30 c 
+additem tmptaxcode.pat tmptaxcode.pat TMPTAXCODEID 8 8 I
 
 &type -- 4. Calc items 
 
 &DATA ARC INFO 
 ARC
-SEL TAXCODE.PAT 
+SEL TMPTAXCODE.PAT 
 MOVE TAXCODE TO OTAXCODE
 ALTER TAXCODE 
 CTAXCODE,,,,,,,,,,,
@@ -102,26 +98,26 @@ REM  CALC RELIACODE = 0
 REM  CALC AUTODATE = $TODAY
 REM  MOVE 'CNV' to AUTOMETHOD 
 REM  MOVE 'MCH' TO AUTOWHO
-REM "MOVE" won't work here because TAXCODE-ID is type B
-CALC TAXCODEID = TAXCODE-ID
+REM "MOVE" won't work here because TMPTAXCODE-ID is type B
+CALC TMPTAXCODEID = TMPTAXCODE-ID
 Q STOP
 &END 
 
 /* 5. Drop un-needed items 
 
-dropitem taxcode.pat taxcode.pat CTAXCODE
-/* dropitem taxcode.pat taxcode.pat TAXMAPTYPE
-dropitem taxcode.pat taxcode.pat TAXCODE-ID
+dropitem tmptaxcode.pat tmptaxcode.pat CTAXCODE
+/* dropitem tmptaxcode.pat tmptaxcode.pat TAXMAPTYPE
+dropitem tmptaxcode.pat tmptaxcode.pat TMPTAXCODE-ID
 
 /* 6. MAKE TAXCODE LINES 
 
-build taxcode line 
+build tmptaxcode line 
 
-additem taxcode.aat taxcode.aat CURRENTLINE 1 1 C 
+additem tmptaxcode.aat tmptaxcode.aat CURRENTLINE 1 1 C 
 
 &DATA ARC INFO 
 ARC
-SEL TAXCODE.AAT 
+SEL TMPTAXCODE.AAT 
 MOVE 'Y' TO CURRENTLINE
 Q STOP
 &END 
