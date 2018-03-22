@@ -2,7 +2,7 @@
 /* Creates coverages of corresponding feature classes
 /*
 /* Input:
-/*   taxbound
+/*   tmptaxbound
 /*   tmptaxmap2
 /*
 /* Output:
@@ -13,10 +13,8 @@
 &if [exists tmpcartol -cover] &then kill tmpcartol all
 &if [exists tmpline -cover] &then kill tmpline all 
 
-&if ^ [exists taxbound -cover] &then &do 
-  &message &popup 
-  &type 'ERROR - MISSING TAXBOUND'
-  &message &on
+&if ^ [exists tmptaxbound -cover] &then &do 
+  &type 'ERROR - MISSING TMPTAXBOUND'
   &return ; &return 
 &end 
 
@@ -28,9 +26,9 @@ res taxmaptype > 100 OR taxmaptype = 34
 n
 n
 
-&type -- 2. Intersect with taxbound to get map number  ************************
+&type -- 2. Intersect with tmptaxbound to get map number  ************************
 
-intersect tmpline taxbound tmpcartol line 
+intersect tmpline tmptaxbound tmpcartol line 
 kill tmpline all
 
 &type -- 3. add needed items ************************ 
@@ -89,10 +87,10 @@ TANGENT2
 TAXMAPSYM
 TAXMAPTYPE
 GEOTRANSNO
-TAXBOUND#
 AREA
 PERIMETER
-TAXBOUND-ID
+TMPTAXBOUND#
+TMPTAXBOUND-ID
 IGDS-GGNO
 MAPNUM
 TOWN

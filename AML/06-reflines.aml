@@ -16,9 +16,7 @@
 &if [exists tmprefl -cover] &then kill tmprefl all 
 
 &if ^ [exists tmptaxbound -cover] &then &do 
-  &message &popup 
   &type 'ERROR - MISSING TMPTAXBOUND'
-  &message &on
   &return ; &return 
 &end 
 

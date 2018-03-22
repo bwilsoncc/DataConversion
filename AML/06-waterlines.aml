@@ -14,9 +14,7 @@
 &WATCH 06-waterlines.wat
 
 &if ^ [exists tmptaxbound -cover] &then &do 
-  &message &popup 
   &type 'ERROR - MISSING TMPTAXBOUND'
-  &message &on
   &return ; &return 
 &end 
 

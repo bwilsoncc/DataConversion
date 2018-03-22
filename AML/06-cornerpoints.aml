@@ -27,16 +27,12 @@ COPYINFO K:\taxmaped\apps\biged2\lookupclatsop\INFO!ARC!XXXYYY.LUT
 
 /* COPYINFO %DLCMASTERPATH%\INFO!ARC!DLCMASTER DLCMASTER
 /* &if ^ [exists %DLCMASTERPATH% -DIRECTORY] &then &do 
-/*   &message &popup 
 /*   &type 'ERROR - PATH TO DLCMASTER TABLE
-/*   &message &on
 /*   &return ; &return 
 /* &end 
 
 &if ^ [exists tmptaxbound -cover] &then &do 
-  &message &popup 
   &type 'ERROR - MISSING TMPTAXBOUND'
-  &message &on
   &return ; &return 
 &end 
 

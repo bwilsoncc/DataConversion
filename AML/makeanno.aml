@@ -27,7 +27,7 @@
   &end
 &end
 
-&s TMPCOVERAGE = tmp%COVERAGE%
+&s TMPCOVERAGE = tmpanno
 &if [exists %TMPCOVERAGE% -cover] &then kill %TMPCOVERAGE% all
 &if [exists %COVERAGE% -cover] &then kill %COVERAGE% all
 
@@ -68,7 +68,6 @@ ef anno.igds
 sel mapscale < 100
 &if [show number select] > 0 &then &do 
   calc $LEVEL = 0
-  calc $SYMBOL = 0
 &end
 
 nsel
@@ -76,35 +75,30 @@ nsel
   /* This catches the leftover cases where scale is not a known value, "this should never happen!"
   /* All scales >= 100 get set to 5 here, then known scales are set to correct values below.
   calc $LEVEL = 5
-  calc $SYMBOL = 5
 &end
 
 sel mapscale = 100
 &if [show number select] > 0 &then &do
   &type SCALE 100
   calc $LEVEL = 1
-  calc $SYMBOL = 1
 &end
 
 sel mapscale = 200 
 &if [show number select] > 0 &then &do 
   &type SCALE 200
   calc $LEVEL = 2
-  calc $SYMBOL = 2
 &end
 
 sel mapscale = 400 
 &if [show number select] > 0 &then &do 
   &type SCALE 400
   calc $LEVEL = 3
-  calc $SYMBOL = 3
 &end
 
 sel mapscale = 2000 
 &if [show number select] > 0 &then &do
   &type SCALE 2000
   calc $LEVEL = 4
-  calc $SYMBOL = 4
 &end
 
 save
@@ -124,6 +118,7 @@ RANGE
 SECTION
 QTR
 GEOTRANSNO
+MAPSIZE
 [UNQUOTE ' '] 
 Y
 Y
