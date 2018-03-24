@@ -18,18 +18,37 @@
 &type PROJECTHOME = %PROJECTHOME%
 &type AMLPATH = [show &amlpath]
 
+/* Hack to work around the fact that I can't seem to pass $SYMBOL
+/* as an arg, so copy it to SYMBOL and use that
+
+arcedit
+ec tmptaxmap2
+ef anno.igds
+sel all
+calc SYMBOL = $SYMBOL
+save
+q
+
+/* ------------------------------------------------------------------------
 &type BEARING AND DISTANCE
+
 &r makeanno taxcodanno tmpbearingan SYMBOL = 34
 arcedit
 ec tmpbearingan
 ef anno.igds
 sel all
 calc $SYMBOL = $LEVEL
+
+&type Fixing font size for bearing/dimension
+/* This was 1.4, I bumped it up 2018/03/23
+calc $SIZE = $SIZE * 1.5
+
 save
 q
 
-
+/* ------------------------------------------------------------------------
 &type TAXLOT ANNOTATION
+
 &r makeanno taxcodanno tmptaxlotan SYMBOL = 37
 arcedit
 ec tmptaxlotan
@@ -39,8 +58,9 @@ calc $SYMBOL = $LEVEL
 save
 q
 
-
+/* ------------------------------------------------------------------------
 &type TAXCODE ANNOTATION
+
 &r makeanno taxcodanno tmptaxcodan SYMBOL = 54
 arcedit
 ec tmptaxcodan
@@ -50,20 +70,37 @@ calc $SYMBOL = $LEVEL
 save
 q
 
-
+/* ------------------------------------------------------------------------
 &type "SEE MAP" ANNOTATION
+
 &r makeanno taxcodanno tmpseemapan SYMBOL = 62
+
 arcedit
 ec tmpseemapan
 ef anno.igds
 sel all
 calc $SYMBOL = $LEVEL
+
+/* &type Adjust SEE MAPS font sizes
+/* SEL MAPSCALE < 100
+/* &IF [SHOW NUMBER SELECT] > 0 &THEN  CALC $SIZE = 14
+/* SEL MAPSCALE = 100
+/* &IF [SHOW NUMBER SELECT] > 0 &THEN  CALC $SIZE = 16
+/* SEL MAPSCALE = 200
+/* &IF [SHOW NUMBER SELECT] > 0 &THEN  CALC $SIZE = 33
+/* SEL MAPSCALE = 400
+/* &IF [SHOW NUMBER SELECT] > 0 &THEN  CALC $SIZE = 66
+/* SEL MAPSCALE = 2000
+/* /* This used to be 315 which seemed absurdly big to me. 2018-03-23
+/* &IF [SHOW NUMBER SELECT] > 0 &THEN  CALC $SIZE = 180
+
 save
 q
 
-
-/* (Catch everything else...)
+/* ------------------------------------------------------------------------
 &type TAXMAP ANNOTATION
+/* (Catch everything else...)
+
 &r makeanno taxmapancc tmptaxmapan SYMBOL <> 34 AND SYMBOL <> 37 AND SYMBOL <> 54 AND SYMBOL <> 62
 
 /* DON'T change $SYMBOL on this annotation, we want to use it later!
@@ -75,6 +112,12 @@ ef anno.igds
 SEL $SYMBOL IN {10,13,16,19,20,23,25,27,36,38,39,41,42,43,45,46,47,56,58}
 NSEL
 &if [show number select] > 0 &then CALC $SYMBOL = 36
+
+/* Is this needed??? It does appear to be working.
+&type Fixing font size for subdivision
+SEL $SYMBOL = 41
+calc $SIZE = $SIZE * 1.4
+
 SAVE
 Q
 

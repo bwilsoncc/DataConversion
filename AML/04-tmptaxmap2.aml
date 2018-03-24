@@ -50,8 +50,7 @@ additem tmptaxmap2.tatigds tmptaxmap2.tatigds mapnumber 20 20 c
 /* These are intermediate fields for use in INFO
 /* ORIGSIZE will have the current $SIZE in it and NEWSIZE will hold the new size until we write it back to $SIZE
 
-/* NEWSIZE used to be a binary value and I am thinking a floating point number makes more sense,
-/* otherwise the values get truncated in the calculations.
+/* NEWSIZE used to be a binary value and I am thinking a floating point number makes more sense
 additem tmptaxmap2.tatigds tmptaxmap2.tatigds ORIGSIZE 8 8 n 2 
 additem tmptaxmap2.tatigds tmptaxmap2.tatigds NEWSIZE  8 8 n 2 
 /*additem tmptaxmap2.tatigds tmptaxmap2.tatigds NEWSIZE,4,5,B 
@@ -191,7 +190,7 @@ save
 q
 
 &type -- 7. Use lookup table to adjust font sizes based on SYMBOL and MAPSCALE and ORIGSIZE
-/* "ORIGSIZE" should have the current font size in it.
+/* "ORIGSIZE" should have the original font size in it.
 
 /* FIXME - there are other mapscales!!!
 
@@ -215,7 +214,7 @@ CALC $NM = 1
 SEL TMPTAXMAP2.TATIGDS
 RELATE ANNOSTD.LUT BY LEVEL WITH ORDER 
 ASEL
-RES MAPSCALE = 100
+RES MAPSCALE <= 100
 CALC NEWSIZE = $1SIZE100
 ASEL
 RES MAPSCALE = 200 
@@ -227,7 +226,7 @@ ASEL
 RES MAPSCALE = 2000 
 CALC NEWSIZE = $1SIZE2000
 ASEL
-RES MAPSCALE = 100 AND LEVEL = 10 AND ORIGSIZE <> 20
+RES MAPSCALE <= 100 AND LEVEL = 10 AND ORIGSIZE <> 20
 CALC NEWSIZE = $1SIZE100 * ORIGSIZE / 20 
 ASEL
 RES MAPSCALE = 200 AND LEVEL = 10 AND ORIGSIZE <> 28
@@ -239,7 +238,7 @@ ASEL
 RES MAPSCALE = 2000 AND LEVEL = 10 AND ORIGSIZE <> 200
 CALC NEWSIZE = $1SIZE2000  * ORIGSIZE / 200 
 ASEL
-RES MAPSCALE = 100 AND LEVEL = 41 AND ORIGSIZE <> 24
+RES MAPSCALE <= 100 AND LEVEL = 41 AND ORIGSIZE <> 24
 CALC NEWSIZE = $1SIZE100  * ORIGSIZE / 24 
 ASEL
 RES MAPSCALE = 200 AND LEVEL = 41 AND ORIGSIZE <> 48
@@ -251,7 +250,7 @@ ASEL
 RES MAPSCALE = 2000 AND LEVEL = 41 AND ORIGSIZE <> 480
 CALC NEWSIZE = $1SIZE2000 * ORIGSIZE / 480 
 ASEL
-RES MAPSCALE = 100 AND LEVEL = 54 AND ( ORIGSIZE < 49 or ORIGSIZE > 51 ) 
+RES MAPSCALE <= 100 AND LEVEL = 54 AND ( ORIGSIZE < 49 or ORIGSIZE > 51 ) 
 CALC NEWSIZE = $1SIZE100  * ORIGSIZE / 50
 ASEL
 RES MAPSCALE = 200 AND LEVEL = 54 AND ( ORIGSIZE < 99 or ORIGSIZE > 101 ) 
@@ -265,83 +264,25 @@ CALC NEWSIZE = $1SIZE2000 * ORIGSIZE / 1000
 Q STOP
 &END
 
-/* I think everything should be handled with the lookup table!
-/* one change at a time, please
-
-arcedit
-ec tmptaxmap2
-ef anno.igds
-
-&type SPECIAL CASE for dimensioning and subdivisions
-
-/* 34 = bearing/distance
-/* 41 = subdivision name
-sel $SYMBOL = 34 or $SYMBOL = 41
-&if [show number select] > 0 &then &do
-&type Fixing SYMBOL 34 and 41, [show number select] instances.
-calc NEWSIZE = $SIZE * 1.4
-&end
-
-&type SPECIAL CASE and ARBITRARY *yet another* for "see maps" size
-
-sel $SYMBOL = 62
-&type Total "SEE MAPS" in this township: [SHOW NUMBER SELECT]
-CALC $LEVEL = 62
-SEL $SYMBOL = 62 AND MAPSCALE = 100
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
-  CALC NEWSIZE = 15.75
-/*  CALC ORIGSIZE = 11.25
-&END 
-SEL $SYMBOL = 62 AND MAPSCALE = 200
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
-  CALC NEWSIZE = 31.5
-/*   CALC ORIGSIZE = 22.5
-&END 
-SEL $SYMBOL = 62 AND MAPSCALE = 400
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
-  CALC NEWSIZE = 63
-/*   CALC ORIGSIZE = 45
-&END 
-SEL $SYMBOL = 62 AND MAPSCALE = 2000
-&IF [SHOW NUMBER SELECT] > 0 &THEN &DO 
-  CALC NEWSIZE = 315
-/*   CALC ORIGSIZE = 225
-&END 
-
-save
-q
-
 &type -- Copy recalculated NEWSIZE back to $SIZE
+/* Let's see what happens if we accept that the original sizes are actually useful??
+/* arcedit
+/* ec tmptaxmap2
+/* ef anno.igds
+/* 
+/* /* Do not overwrite a legit size with a ZERO!
+/* sel NEWSIZE > 0
+/* &if [show number select] > 0 &then &do
+/*   calc $SIZE = NEWSIZE
+/* &end
+/* save
+/* q
 
-arcedit
-ec tmptaxmap2
-ef anno.igds
-
-/* Do not overwrite a legit size with a ZERO!
-sel NEWSIZE > 0
-&if [show number select] > 0 &then &do
-  calc $size = NEWSIZE
-&end
-
-/* sel NEWSIZE = 0
-/* list $SYMBOL $LEVEL $SIZE MAPSCALE TEXT
-save
-q
-
-&type Hack for 05-annotation, copy $SYMBOL to SYMBOL
-arcedit
-ec tmptaxmap2
-ef anno.igds
-sel all
-calc SYMBOL = $SYMBOL
-save
-q
-
-/* We're done with these now, delete them so they don't
-/* confuse Brian later on...
+/* We're done with these now, delete them so they don't confuse Brian later on...
 dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds LEVEL
-dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds ORIGSIZE
-dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds NEWSIZE
+/* Note they get dropped anyway when the annotation is pushed into templates
+/*dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds ORIGSIZE
+/*dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds NEWSIZE
 
 /* &type -- Kill temp files
 kill tbigds
