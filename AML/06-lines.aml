@@ -1,0 +1,43 @@
+/* Generate the coverages for lines
+/*
+/* Args:
+/*   NONE
+/* Input:
+/*   tmptaxmap2 anno.igds
+/*
+/* Output:
+/*   lines in tmprefl, tmpcartol, tmpwaterl, tmpplssl
+/* 
+&WATCH 06-lines.wat
+
+/* I guess .arc is not getting run when running from Python?
+/* hence set the environment variables here:
+&s PROJECTHOME = C:/GeoModel/Clatsop
+&AMLPATH %PROJECTHOME%/AML
+&type PROJECTHOME = %PROJECTHOME%
+&type AMLPATH = [show &amlpath]
+
+/* -----------------------------------------------------------------------
+&type carto lines
+&r makelines tmpcartol {100,102,120,121,125,134,136,137,141,147,154,161,162,199}
+dropitem tmpcartol.aat tmpcartol.aat DIRECTION
+
+/* -----------------------------------------------------------------------
+&type plss lines
+&r makelines tmpplssl {2,3,44,46,47,48}
+
+/* -----------------------------------------------------------------------
+&type ref lines
+&r makelines tmprefl {7,9,11,12,15,17,18,160,51,52,55,56,60,61,62,63,70,71,72,33,40}
+/* we don't seem to populate these so do we need them?
+/* additem tmprefl.aat tmprefl.aat LoStation 20 20 c 
+/* additem tmprefl.aat tmprefl.aat HiStation 20 20 c 
+
+/* -----------------------------------------------------------------------
+&type water lines
+&r makelines tmpwaterl {22,24,26,28,30,50}
+/* we don't seem to populate this so do we need it?
+/* additem tmpwaterl.aat tmpwaterl.aat watername 64 64 c 
+
+&type That's all!
+&return

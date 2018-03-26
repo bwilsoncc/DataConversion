@@ -1,4 +1,4 @@
-/* Generate a coverage containing an annotation feature class
+/* Generate the coverages for annotation
 /*
 /* Args:
 /*   NONE
@@ -11,7 +11,7 @@
 
 &WATCH 05-annotation.wat
 
-/* I guess .arc is not getting run when running from Python? Weird.
+/* I guess .arc is not getting run when running from Python?
 /* hence set the environment variables here:
 &s PROJECTHOME = C:/GeoModel/Clatsop
 &AMLPATH %PROJECTHOME%/AML

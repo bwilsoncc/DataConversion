@@ -1,6 +1,5 @@
 *~
 *.dll
-Scratch.mdb
 .idle.rc
 Source
 *.log
@@ -8,3 +7,5 @@ Source
 *.o
 *.wat
 Source
+log
+info

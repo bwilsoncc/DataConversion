@@ -1,0 +1,112 @@
+/************************************************
+/* Creates line coverage with selected features
+/*
+/* Args:
+/*   COVERAGE   Name of coverage (a string) to be created
+/*   SELECTION  set of features, like {1,2,3}
+/*   
+/* Input:
+/*   tmptaxmap2   lines are copied from here
+/*   tmptaxbound  intersect to find mapnumber attributes
+/* 
+/* Output:
+/*   The coverage will have annotation.igds but we don't use it so don't worry about the extra anno in there.
+/*
+&args COVERAGE QUOTEDSELECTION:REST
+&s SELECTION = [unquote %QUOTEDSELECTION%]
+&type COVERAGE  = %COVERAGE%
+&type SELECTION = %SELECTION%
+
+&if ^ [exists tmptaxbound -cover] &then &do 
+  &type 'ERROR - MISSING TMPTAXBOUND'
+  &return ; &return 
+&end 
+
+&do name &list tmpline, %COVERAGE%
+  &if [exists %name% -cover] &then kill %name% all
+&end
+
+&type -- 1. Select features
+arcedit
+ec tmptaxmap2
+ef line
+sel taxmaptype IN %SELECTION%
+put tmpline
+quit
+
+&type -- 2. Intersect with tmptaxbound to get map number
+&type You will now see a bunch of "item duplicated" warning messages that seem harmless.
+
+intersect tmpline tmptaxbound %COVERAGE% line
+kill tmpline all
+
+&type -- 3. add needed items ************************ 
+
+additem %COVERAGE%.aat %COVERAGE%.aat linetype 3 3 i
+additem %COVERAGE%.aat %COVERAGE%.aat source 20 20 c 
+additem %COVERAGE%.aat %COVERAGE%.aat sourcetype 20 20 c 
+additem %COVERAGE%.aat %COVERAGE%.aat DIRECTION 12 12 c 
+
+&type -- 4. Set fields as needed
+
+arcedit
+ec %COVERAGE%
+ef arc
+sel all
+calc linetype = taxmaptype
+calc sourcetype = 'OTHER'
+calc source = 'OLDTAXMAPS'
+calc reliacode = 0
+calc direction = angle 
+save
+q
+
+&type -- 5. DROP ITEMS NOT USED ***************************
+
+DROPITEM %COVERAGE%.AAT %COVERAGE%.AAT               
+TMPLINE#
+TMPLINE-ID
+ANGLE
+DISTANCE
+RADIUS
+DELTA
+TANGENT
+ARCLENGTH
+SIDE
+RADIUS2
+TANGENT2
+TAXMAPSYM
+TAXMAPTYPE
+GEOTRANSNO
+TMPTAXBOUND#
+AREA
+PERIMETER
+TMPTAXBOUND-ID
+IGDS-GGNO
+MAPNUM
+TOWN
+RANGE
+SECTION
+QTR
+TAXLOT
+REFOREST
+TAXCODE
+DETAILSCALE
+CLOSEMETHOD
+CLOSERROR
+LEGACRES1
+LEGACRES2
+MAPACRES
+POINTNAME
+ORMAPNUM
+MAPSUFTYPE
+MAPSUFNUM
+TAXLOTC
+MQ
+MQQ
+[UNQUOTE ' '] 
+Y
+Y
+
+&RETURN 
+

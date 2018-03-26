@@ -1,9 +1,10 @@
 /************************************************
-/* Creates coverages of corresponding feature class-> corner points
+/* Creates corner point coverage
 /* 
 /* Input:
 /*   tmptaxbound
 /*   tmptaxmap2
+/*---> UNUSED, COMMENTED OUT
 /*   DLCMASTER from AnnoGenCov
 /*   xxxyyy.lut from K:   I have no idea what this is for, I asked Dean but I don't remember the answer :-)
 /*
@@ -15,98 +16,111 @@
 
 &if [exists tmppt -cover] &then kill tmppt all 
 &if [exists tmpcorner -cover] &then kill tmpcorner all 
-&s x = [delete DLCMASTER -INFO] 
-&s x = [delete xxxyyy.lut -info] 
 
+/* &s x = [delete DLCMASTER -INFO] 
 &if [exists control -cover] &then kill control all 
 /* &S DLCMASTERPATH = P:\taxmaped\apps\ConvertTwnToGeo\annogencov 
 &S DLCMASTERPATH = C:\GeoModel\Clatsop\AnnoGenCov
 
-/* COPYINFO P:\taxmaped\apps\biged2\lookupPolk\INFO!ARC!XXXYYY.LUT
-COPYINFO K:\taxmaped\apps\biged2\lookupclatsop\INFO!ARC!XXXYYY.LUT
-
-/* COPYINFO %DLCMASTERPATH%\INFO!ARC!DLCMASTER DLCMASTER
 /* &if ^ [exists %DLCMASTERPATH% -DIRECTORY] &then &do 
-/*   &type 'ERROR - PATH TO DLCMASTER TABLE
+/*    &type 'ERROR - DLCMASTER TABLE
 /*   &return ; &return 
 /* &end 
+/* COPYINFO %DLCMASTERPATH%\INFO!ARC!DLCMASTER DLCMASTER
+
+/*&s x = [delete xxxyyy.lut -info] 
+/* COPYINFO P:\taxmaped\apps\biged2\lookupPolk\INFO!ARC!XXXYYY.LUT
+/*COPYINFO K:\taxmaped\apps\biged2\lookupclatsop\INFO!ARC!XXXYYY.LUT
 
 &if ^ [exists tmptaxbound -cover] &then &do 
   &type 'ERROR - MISSING TMPTAXBOUND'
   &return ; &return 
 &end 
 
-&type -- 1. Select just ref lines  from taxmap  ************************
+&type -- 1. Select points from taxmap  *********************
 /*20-HWYSTATION
 /*45-SECTION
 /*44-SUBSECTION
 /*47-DLC
-/*48-MEANDERCO
+/*48-MEANDERLINE
 
-reselect tmptaxmap2 tmppt POINT 
-res taxmaptype = 20 OR taxmaptype = 44 or taxmaptype = 45 OR TAXMAPTYPE = 47 ~
-OR TAXMAPTYPE = 48 
-[unquote ' '] 
-n
-n
+&type -- 1. Select features
+arcedit
+ec tmptaxmap2
+ef point
+/*                 corners              polk county {20,44,45,47,48}
+sel taxmaptype IN {1,2,3,4,5,6,7,8,39,59,61}
+put tmppt
+quit
 
-&type -- 2. Intersect with tmptaxbound to get map number  ************************
+&type -- 2. Intersect with tmptaxbound to get map number  ***********
 intersect tmppt tmptaxbound tmpcorner  point
 kill tmppt all
 
 &type -- 3. Add needed items ************************ 
 
+/* 2018/3/26 bhw commented out the attributes that were not being populated.
+
 additem tmpcorner.Pat tmpcorner.Pat CornerSymbol 3 3 i 
-additem tmpcorner.Pat tmpcorner.Pat CornerDesc 64 64 c 
-additem tmpcorner.Pat tmpcorner.Pat ControlType 3 3 i 
+/* additem tmpcorner.Pat tmpcorner.Pat CornerDesc 64 64 c 
+/* additem tmpcorner.Pat tmpcorner.Pat ControlType 3 3 i 
 additem tmpcorner.Pat tmpcorner.Pat CommonName 32 32 c 
 additem tmpcorner.Pat tmpcorner.Pat GCDB 10 10 c 
-additem tmpcorner.Pat tmpcorner.Pat Easting 8 18 F 5 
-additem tmpcorner.Pat tmpcorner.Pat Northing 8 18 F 5 
-additem tmpcorner.Pat tmpcorner.Pat Latitude 8 18 F 5 
-additem tmpcorner.Pat tmpcorner.Pat Longitude 8 18 F 5 
+/* additem tmpcorner.Pat tmpcorner.Pat Easting 8 18 F 5 
+/* additem tmpcorner.Pat tmpcorner.Pat Northing 8 18 F 5 
+/* additem tmpcorner.Pat tmpcorner.Pat Latitude 8 18 F 5 
+/* additem tmpcorner.Pat tmpcorner.Pat Longitude 8 18 F 5 
 
 additem tmpcorner.Pat tmpcorner.Pat source 20 20 c 
 additem tmpcorner.Pat tmpcorner.Pat sourcetype 20 20 c 
 
-&type -- 4. Assign fields as needed ************************
+&type -- 4. Set fields as needed
 
-&data arc info 
-arc
-/********************************** Assign values to all 
-sel TMPCORNER.PAT
-MOVE 'OTHER' TO SOURCETYPE
-MOVE 'OLDTAXMAPS' TO SOURCE 
-CALC RELIACODE = 0
-MOVE POINTNAME TO COMMONNAME
+arcedit
+ec tmpcorner
+ef point
+sel all
+calc sourcetype = 'OTHER'
+calc source = 'OLDTAXMAPS'
+calc reliacode = 0
+calc commonname = pointname
+calc cornersymbol = taxmaptype
+/* calc controltype = taxmaptype
+save
+q
+
+/* old polk county code
+/* &data arc info 
+/* arc
+/* sel TMPCORNER.PAT
 /******************************* SET POINT TYPES 
-ASEL
-RES TAXMAPTYPE = 20                                     /* Station-corner
-CALC CORNERSYMBOL = 1 
-CALC CONTROLTYPE = 24
-CONCAT COMMONNAME FROM 'STN-',POINTNAME
-ASEL
-RES TAXMAPTYPE = 45                                      /* Section
-CALC CORNERSYMBOL = 0 
-CALC CONTROLTYPE = 22
-CONCAT CORNERDESC FROM 'SCTN-',POINTNAME
-ASEL
-RES TAXMAPTYPE = 44                                     /* subsection
-CALC CORNERSYMBOL = 0 
-CALC CONTROLTYPE = 21
-CONCAT CORNERDESC FROM 'SUBSCTN-',POINTNAME
-ASEL
-RES TAXMAPTYPE = 47                                     /* DLC
-CALC CORNERSYMBOL = 5 
-CALC CONTROLTYPE = 7
-CONCAT CORNERDESC FROM 'DLC-',POINTNAME
-ASEL
-RES TAXMAPTYPE = 48                                     /* MEANDER
-CALC CORNERSYMBOL = 7 
-CALC CONTROLTYPE = 17
-CONCAT CORNERDESC FROM 'MNDR-',POINTNAME'
-Q STOP
-&END 
+/* ASEL
+/* RES TAXMAPTYPE = 20                                     /* Station-corner
+/* CALC CORNERSYMBOL = 1 
+/* CALC CONTROLTYPE = 24
+/* CONCAT COMMONNAME FROM 'STN-',POINTNAME
+/* ASEL
+/* RES TAXMAPTYPE = 45                                      /* Section
+/* CALC CORNERSYMBOL = 0 
+/* CALC CONTROLTYPE = 22
+/* CONCAT CORNERDESC FROM 'SCTN-',POINTNAME
+/* ASEL
+/* RES TAXMAPTYPE = 44                                     /* subsection
+/* CALC CORNERSYMBOL = 0 
+/* CALC CONTROLTYPE = 21
+/* CONCAT CORNERDESC FROM 'SUBSCTN-',POINTNAME
+/* ASEL
+/* RES TAXMAPTYPE = 47                                     /* DLC
+/* CALC CORNERSYMBOL = 5 
+/* CALC CONTROLTYPE = 7
+/* CONCAT CORNERDESC FROM 'DLC-',POINTNAME
+/* ASEL
+/* RES TAXMAPTYPE = 48                                     /* MEANDER
+/* CALC CORNERSYMBOL = 7 
+/* CALC CONTROLTYPE = 17
+/* CONCAT CORNERDESC FROM 'MNDR-',POINTNAME
+/* Q STOP
+/* &END 
 
 &DATA ARC INFO
 ARC
@@ -115,7 +129,6 @@ RES POINTNAME CN '0' AND POINTNAME NC 'd' AND POINTNAME NC 'c'and POINTNAME NC '
 MOVE POINTNAME TO GCDB 
 Q STOP
 &END 
-
 
 &type -- 5. DROP ITEMS NOT USED ***************************
 
