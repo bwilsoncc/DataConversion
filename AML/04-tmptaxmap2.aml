@@ -36,20 +36,12 @@ copy tmptaxmap1 tmptaxmap2
 /* I believe this to be completely redundant
 addtext tmptaxmap2 igds
 
-
-/* These are just needed to deal with code that can't handle the $
-/* with passing the $ as an arg in 05-annotation.
-/* This means we have to copy $* into * down below in a few lines...
-/* dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds LEVEL
-/* dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds SYMBOL
-
 /*additem tmptaxmap2.tatigds tmptaxmap2.tatigds maplevel 3 3 i 
 additem tmptaxmap2.tatigds tmptaxmap2.tatigds mapscale 5 5 i
 additem tmptaxmap2.tatigds tmptaxmap2.tatigds mapnumber 20 20 c 
 
 /* These are intermediate fields for use in INFO
 /* ORIGSIZE will have the current $SIZE in it and NEWSIZE will hold the new size until we write it back to $SIZE
-
 /* NEWSIZE used to be a binary value and I am thinking a floating point number makes more sense
 additem tmptaxmap2.tatigds tmptaxmap2.tatigds ORIGSIZE 8 8 n 2 
 additem tmptaxmap2.tatigds tmptaxmap2.tatigds NEWSIZE  8 8 n 2 
@@ -147,7 +139,7 @@ sel all
 /*calc maplevel = $LEVEL /* this throws an error so I do it in and info session instead, above
 calc ORIGSIZE = $SIZE /* this throws an error in the info session, so I do it here, instead. Sigh.
 
-/* 56 = Zone annotation (Used for beach vegetation line per ORS 390.770)
+/* 56 = Zone annotation (Used for beach vegetation line in Clatsop)
 /* I think Dean has this here because they use it for county boundary instead
 /* We don't want to touch it.
 /* sel $LEVEL = 56
@@ -181,7 +173,8 @@ NSEL
     calc $LEVEL = 36
 &end 
 
-/*sel all
+sel all
+/* Setting $SIZE to 0 means you can alter the settings in arcmap
 /*calc $SIZE = 0
 /*calc $SYMBOL = $LEVEL /* Well I don't think I want to lose this, I want a separate symbol and class id
 calc LEVEL = $LEVEL
@@ -278,13 +271,13 @@ Q STOP
 /* save
 /* q
 
-/* We're done with these now, delete them so they don't confuse Brian later on...
+/* We're done with these now, delete them so they don't confuse me later on...
 dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds LEVEL
 /* Note they get dropped anyway when the annotation is pushed into templates
 /*dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds ORIGSIZE
 /*dropitem tmptaxmap2.tatigds tmptaxmap2.tatigds NEWSIZE
 
-/* &type -- Kill temp files
+&type -- Kill temp files
 kill tbigds
 kill igds
 

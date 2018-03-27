@@ -31,8 +31,11 @@ arcedit
 ec tmptaxmap2
 ef line
 sel taxmaptype IN %SELECTION%
-put tmpline
+&if [show number select] > 0 &then  put tmpline
+&else                               &type No lines selected, bailing out.
 quit
+
+&if ^ [exists tmpline -cover] &then &return
 
 &type -- 2. Intersect with tmptaxbound to get map number
 &type You will now see a bunch of "item duplicated" warning messages that seem harmless.
@@ -51,7 +54,7 @@ additem %COVERAGE%.aat %COVERAGE%.aat DIRECTION 12 12 c
 
 arcedit
 ec %COVERAGE%
-ef arc
+ef line
 sel all
 calc linetype = taxmaptype
 calc sourcetype = 'OTHER'
