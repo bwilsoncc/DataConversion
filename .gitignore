@@ -9,3 +9,9 @@ Source
 Source
 log
 info
+Workfolder/tmp*
+Workfolder/t?-*
+Dean
+ConversionTools
+Goal2
+Goal2Shapes
