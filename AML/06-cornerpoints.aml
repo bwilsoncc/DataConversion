@@ -37,40 +37,28 @@
   &return ; &return 
 &end 
 
-&type -- 1. Select points from taxmap  *********************
-/*20-HWYSTATION
-/*45-SECTION
-/*44-SUBSECTION
-/*47-DLC
-/*48-MEANDERLINE
-
 &type -- 1. Select features
+
 arcedit
 ec tmptaxmap2
 ef point
 /*                 corners              polk county {20,44,45,47,48}
 sel taxmaptype IN {1,2,3,4,5,6,7,8,39,59,61}
-put tmppt
+&if [show number select] > 0 &then  put tmppt
+&else                              &type No lines selected, bailing out.
 quit
+
+&if ^ [exists tmppt -cover] &then &return
 
 &type -- 2. Intersect with tmptaxbound to get map number  ***********
 intersect tmppt tmptaxbound tmpcorner  point
 kill tmppt all
 
-&type -- 3. Add needed items ************************ 
-
-/* 2018/3/26 bhw commented out the attributes that were not being populated.
+&type -- 3. Add fields ************************ 
 
 additem tmpcorner.Pat tmpcorner.Pat CornerSymbol 3 3 i 
-/* additem tmpcorner.Pat tmpcorner.Pat CornerDesc 64 64 c 
-/* additem tmpcorner.Pat tmpcorner.Pat ControlType 3 3 i 
 additem tmpcorner.Pat tmpcorner.Pat CommonName 32 32 c 
 additem tmpcorner.Pat tmpcorner.Pat GCDB 10 10 c 
-/* additem tmpcorner.Pat tmpcorner.Pat Easting 8 18 F 5 
-/* additem tmpcorner.Pat tmpcorner.Pat Northing 8 18 F 5 
-/* additem tmpcorner.Pat tmpcorner.Pat Latitude 8 18 F 5 
-/* additem tmpcorner.Pat tmpcorner.Pat Longitude 8 18 F 5 
-
 additem tmpcorner.Pat tmpcorner.Pat source 20 20 c 
 additem tmpcorner.Pat tmpcorner.Pat sourcetype 20 20 c 
 
@@ -85,42 +73,8 @@ calc source = 'OLDTAXMAPS'
 calc reliacode = 0
 calc commonname = pointname
 calc cornersymbol = taxmaptype
-/* calc controltype = taxmaptype
 save
 q
-
-/* old polk county code
-/* &data arc info 
-/* arc
-/* sel TMPCORNER.PAT
-/******************************* SET POINT TYPES 
-/* ASEL
-/* RES TAXMAPTYPE = 20                                     /* Station-corner
-/* CALC CORNERSYMBOL = 1 
-/* CALC CONTROLTYPE = 24
-/* CONCAT COMMONNAME FROM 'STN-',POINTNAME
-/* ASEL
-/* RES TAXMAPTYPE = 45                                      /* Section
-/* CALC CORNERSYMBOL = 0 
-/* CALC CONTROLTYPE = 22
-/* CONCAT CORNERDESC FROM 'SCTN-',POINTNAME
-/* ASEL
-/* RES TAXMAPTYPE = 44                                     /* subsection
-/* CALC CORNERSYMBOL = 0 
-/* CALC CONTROLTYPE = 21
-/* CONCAT CORNERDESC FROM 'SUBSCTN-',POINTNAME
-/* ASEL
-/* RES TAXMAPTYPE = 47                                     /* DLC
-/* CALC CORNERSYMBOL = 5 
-/* CALC CONTROLTYPE = 7
-/* CONCAT CORNERDESC FROM 'DLC-',POINTNAME
-/* ASEL
-/* RES TAXMAPTYPE = 48                                     /* MEANDER
-/* CALC CORNERSYMBOL = 7 
-/* CALC CONTROLTYPE = 17
-/* CONCAT CORNERDESC FROM 'MNDR-',POINTNAME
-/* Q STOP
-/* &END 
 
 &DATA ARC INFO
 ARC

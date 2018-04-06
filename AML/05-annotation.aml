@@ -6,8 +6,7 @@
 /*   tmptaxmap2 anno.igds
 /*
 /* Output:
-/*   annotation in tmpbearingan tmptaxlotan tmptaxcodan tmpseemapan tmptaxmapan
-/* 
+/*   annotation in tmpbearingan tmptaxlotan tmptaxcodan tmpseemapan tmptaxmapan lotsonlyan
 
 &WATCH 05-annotation.wat
 
@@ -29,58 +28,63 @@ calc SYMBOL = $SYMBOL
 save
 q
 
-/* ------------------------------------------------------------------------
-&type BEARING AND DISTANCE
-
-&r makeanno taxcodanno tmpbearingan SYMBOL = 34
-arcedit
-ec tmpbearingan
-ef anno.igds
-sel all
-calc $SYMBOL = $LEVEL
-
-&type Fixing font size for bearing/dimension
-/* This was 1.4, I bumped it up 2018/03/23
-calc $SIZE = $SIZE * 1.5
-
-save
-q
 
 /* ------------------------------------------------------------------------
-&type TAXLOT ANNOTATION
-
+&type 1 TAXLOT ANNOTATION
+/* NB "taxcodanno" is a template
 &r makeanno taxcodanno tmptaxlotan SYMBOL = 37
-arcedit
-ec tmptaxlotan
-ef anno.igds
-sel all
-calc $SYMBOL = $LEVEL
-save
-q
+
+&if [exists tmptaxlotan -cover] &then &do
+  arcedit
+  ec tmptaxlotan
+  ef anno.igds
+  sel all
+  calc $SYMBOL = $LEVEL
+  save
+  q
+&end
 
 /* ------------------------------------------------------------------------
-&type TAXCODE ANNOTATION
+&type 2 BEARING AND DISTANCE
+/* NB "taxcodanno" is a template
+&r makeanno taxcodanno tmpbearingan SYMBOL = 34
+&if [exists tmpbearingan -cover] &then &do
+  arcedit
+  ec tmpbearingan
+  ef anno.igds
+  sel all
+  calc $SYMBOL = $LEVEL
+  &type Fixing font size for bearing/dimension
+  /* This was 1.4, I bumped it up 2018/03/23
+  calc $SIZE = $SIZE * 1.5
+  save
+  q
+&end
 
+/* ------------------------------------------------------------------------
+&type 3 TAXCODE ANNOTATION
+/* NB "taxcodanno" is a template
 &r makeanno taxcodanno tmptaxcodan SYMBOL = 54
-arcedit
-ec tmptaxcodan
-ef anno.igds
-sel all
-calc $SYMBOL = $LEVEL
-save
-q
+&if [exists tmptaxcodan -cover] &then &do
+  arcedit
+  ec tmptaxcodan
+  ef anno.igds
+  sel all
+  calc $SYMBOL = $LEVEL
+  save
+  q
+&end
 
 /* ------------------------------------------------------------------------
-&type "SEE MAP" ANNOTATION
-
+&type 4 "SEE MAP" ANNOTATION
+/* NB "taxcodanno" is a template
 &r makeanno taxcodanno tmpseemapan SYMBOL = 62
-
-arcedit
-ec tmpseemapan
-ef anno.igds
-sel all
-calc $SYMBOL = $LEVEL
-
+&if [exists tmpseemap -cover] &then &do
+  arcedit
+  ec tmpseemapan
+  ef anno.igds
+  sel all
+  calc $SYMBOL = $LEVEL
 /* &type Adjust SEE MAPS font sizes
 /* SEL MAPSCALE < 100
 /* &IF [SHOW NUMBER SELECT] > 0 &THEN  CALC $SIZE = 14
@@ -93,32 +97,29 @@ calc $SYMBOL = $LEVEL
 /* SEL MAPSCALE = 2000
 /* /* This used to be 315 which seemed absurdly big to me. 2018-03-23
 /* &IF [SHOW NUMBER SELECT] > 0 &THEN  CALC $SIZE = 180
-
-save
-q
+  save
+  q
+&end
 
 /* ------------------------------------------------------------------------
-&type TAXMAP ANNOTATION
+&type 5 TAXMAP ANNOTATION
 /* (Catch everything else...)
-
 &r makeanno taxmapancc tmptaxmapan SYMBOL <> 34 AND SYMBOL <> 37 AND SYMBOL <> 54 AND SYMBOL <> 62
-
-/* DON'T change $SYMBOL on this annotation, we want to use it later!
-/* BUT rewrite things I don't understand into REF NOTE so they don't disappear
-
-arcedit
-ec tmptaxmapan
-ef anno.igds
-SEL $SYMBOL IN {10,13,16,19,20,23,25,27,36,38,39,41,42,43,45,46,47,56,58}
-NSEL
-&if [show number select] > 0 &then CALC $SYMBOL = 36
-
-/* Is this needed??? It does appear to be working.
-&type Fixing font size for subdivision
-SEL $SYMBOL = 41
-calc $SIZE = $SIZE * 1.4
-
-SAVE
-Q
+&if [exists tmptaxmapan -cover] &then &do
+  /* DON'T change $SYMBOL on this annotation, we want to use it later!
+  /* BUT rewrite things I don't understand into REF NOTE so they don't disappear
+  arcedit
+  ec tmptaxmapan
+  ef anno.igds
+  SEL $SYMBOL IN {10,13,16,19,20,23,25,27,36,38,39,41,42,43,45,46,47,56,58}
+  NSEL
+  &if [show number select] > 0 &then CALC $SYMBOL = 36
+  /* Is this needed??? It does appear to be working.
+  &type Fixing font size for subdivision
+  SEL $SYMBOL = 41
+  calc $SIZE = $SIZE * 1.4
+  SAVE
+  Q
+&end
 
 &return

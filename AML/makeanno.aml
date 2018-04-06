@@ -27,41 +27,31 @@
   &end
 &end
 
-&s TMPCOVERAGE = tmpanno
-&if [exists %TMPCOVERAGE% -cover] &then kill %TMPCOVERAGE% all
+&if [exists tmpanno -cover] &then kill tmpanno all
 &if [exists %COVERAGE% -cover] &then kill %COVERAGE% all
 
 arcedit
 ec tmptaxmap2
 ef anno.igds
-
-/* Some of our data has the symbol set wrong (38?) but the text says SEE MAP so I try to catch that.
 SEL %SELECTION%
 &if [show number select] > 0 &then &do
-put %TMPCOVERAGE%
+put tmpanno
 &end
-
 q
 
-&if [exists %TMPCOVERAGE% -cover] = .false. &then &do
-  &type %TMPCOVERAGE% does not exist
-  &return ; &return
+&if [exists tmpanno -cover] = .false. &then &do
+  &type ================= WARNING! NOT creating %COVERAGE% ===================
+  &return
 &end
 
 /* Remember things that look fragmented might be -- two features like "SEE MAP" and "6 10 29DB" will draw together
 
 /* ========================================================================
 &type -- Assign new levels based on scale.
-/* I don't think I even need to do this, since I just use
-/* mapscale directly to determine if anno shows or not at a given scale.
-
-&type -- Assign new LEVEL based on scale
-
-/* Not even sure I need to do this, since I just use mapscale
-/* directly in ArcMap to determine if anno shows or not at a given scale.
+/* $LEVEL is imported into geodatabase as annotation classes
 
 arcedit 
-ec %TMPCOVERAGE%
+ec tmpanno
 ef anno.igds
 
 /* All the large scales get tossed into one level, 0.
@@ -107,7 +97,7 @@ q
 /* ========================================================================
 
 &type Drop unwanted fields
-dropitem %TMPCOVERAGE%.tatigds %TMPCOVERAGE%.tatigds 
+dropitem tmpanno.tatigds tmpanno.tatigds 
 X
 Y
 OFFSETX
@@ -132,11 +122,11 @@ copy %TEMPLATE% %COVERAGE%
 arcedit
 ec %COVERAGE%
 ef anno.igds
-get %TMPCOVERAGE% 
+get tmpanno 
 save
 quit yes
 
-&if [exists %TMPCOVERAGE% -cover] &then kill %TMPCOVERAGE% all
+&if [exists tmpanno -cover] &then kill tmpanno all
 
 /* We are done with this stupid hack so get rid of the duplicated field
 dropitem %COVERAGE%.tatigds %COVERAGE%.tatigds SYMBOL
