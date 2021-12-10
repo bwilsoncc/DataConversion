@@ -1,3 +1,8 @@
+# Data Conversion project
+
+We moved from ArcInfo 9 to ArcMap 10 so all the old coverages etc were managed with AML.
+I had to move all the data into ArcGIS Enterprise feature classes. That's what this
+project is for.
 
 # Some details
 
